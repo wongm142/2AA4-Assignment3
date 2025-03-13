@@ -45,10 +45,48 @@ public class Coordinates {
     }
 
     public void turnLeft(){
+        switch (direction){
+            case N:
+                yCoord++;
+                xCoord--;
+                break;
+            case S:
+                yCoord--;
+                xCoord++;
+                break;
+            case E:
+                xCoord++;
+                yCoord++;
+                break;
+            case W:
+                xCoord--;
+                yCoord--;
+                break;
+        }
+
         this.direction = direction.leftDirection();
     }
 
     public void turnRight(){
+        switch (direction){
+            case N:
+                yCoord++;
+                xCoord++;
+                break;
+            case S:
+                yCoord--;
+                xCoord--;
+                break;
+            case E:
+                xCoord++;
+                yCoord--;
+                break;
+            case W:
+                xCoord--;
+                yCoord++;
+                break;
+        }
+
         this.direction = direction.rightDirection();
     }
 
