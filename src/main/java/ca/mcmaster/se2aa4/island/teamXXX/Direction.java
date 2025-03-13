@@ -19,8 +19,6 @@ public enum Direction {
             default:
                 throw new IllegalStateException("Unexpected Value: " + this);
         }
-
-        return this;
     }
 
     public Direction rightDirection(){
@@ -36,7 +34,5 @@ public enum Direction {
             default:
                 throw new IllegalStateException("Unexpected Value: " + this);
         }
-
-        return this;
     }
 }
