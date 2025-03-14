@@ -1,22 +1,22 @@
 package ca.mcmaster.se2aa4.island.teamXXX;
 
 public class Coordinates {
-    private int xCoord;
-    private int yCoord;
+    private int x;
+    private int y;
     private Direction direction;
 
-    public Coordinates(int xCoord, int yCoord, Direction direction){
-        this.xCoord = xCoord;
-        this.yCoord = yCoord;
+    public Coordinates(int x, int y, Direction direction){
+        this.x = x;
+        this.y = y;
         this.direction = direction;
     }
 
-    public int getXCoords(){
-        return xCoord;
+    public int getX(){
+        return x;
     }
 
-    public int getYCoords(){
-        return yCoord;
+    public int getY(){
+        return y;
     }
 
     public Direction getDirection(){
@@ -30,16 +30,16 @@ public class Coordinates {
     public void flyForwards(){
         switch (direction){
             case N:
-                yCoord++;
+                y++;
                 break;
             case S:
-                yCoord--;
+                y--;
                 break;
             case E:
-                xCoord++;
+                x++;
                 break;
             case W:
-                xCoord--;
+                x--;
                 break;
         }
     }
@@ -47,20 +47,20 @@ public class Coordinates {
     public void turnLeft(){
         switch (direction){
             case N:
-                yCoord++;
-                xCoord--;
+                y++;
+                x--;
                 break;
             case S:
-                yCoord--;
-                xCoord++;
+                y--;
+                x++;
                 break;
             case E:
-                xCoord++;
-                yCoord++;
+                x++;
+                y++;
                 break;
             case W:
-                xCoord--;
-                yCoord--;
+                x--;
+                y--;
                 break;
         }
 
@@ -70,20 +70,20 @@ public class Coordinates {
     public void turnRight(){
         switch (direction){
             case N:
-                yCoord++;
-                xCoord++;
+                y++;
+                x++;
                 break;
             case S:
-                yCoord--;
-                xCoord--;
+                y--;
+                x--;
                 break;
             case E:
-                xCoord++;
-                yCoord--;
+                x++;
+                y--;
                 break;
             case W:
-                xCoord--;
-                yCoord++;
+                x--;
+                y++;
                 break;
         }
 

@@ -12,6 +12,7 @@ public class Drone {
     private Direction currDirection;
     private Battery batteryLevel;
     private Coordinates currPosition;
+    private Actions actions;
 
     public Drone (String direction, int initialBattery) {
         batteryLevel = new Battery(initialBattery);
@@ -26,6 +27,12 @@ public class Drone {
     public int getBattery(){
         return batteryLevel.getBattery();
     }
+
+    // public JSONObject beginExplore(){
+    //     // search POI here and stuff
+    //     return
+
+    // }
 
     
 }
