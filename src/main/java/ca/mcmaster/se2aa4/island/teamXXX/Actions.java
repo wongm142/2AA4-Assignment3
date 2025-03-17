@@ -27,7 +27,7 @@ public class Actions {
 
     public void echo(Directions direction){
         decision.put("action", "echo");
-        decision.put("parameters", (new JSONObject()).put("direction", decision.toString()));
+        decision.put("parameters", (new JSONObject()).put("direction", direction.toString()));
     }
 
     public void heading(Directions direction){

@@ -9,30 +9,55 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 public class Drone {
+    private final Logger logger = LogManager.getLogger();
+
     private Direction currDirection;
     private Battery batteryLevel;
     private Coordinates currPosition;
     private Actions actions;
 
-    public Drone (String direction, int initialBattery) {
+    private IslandFinder finder = new IslandFinder();
+    private Info currInfo;
+
+    public Drone(String direction, int initialBattery) {
         batteryLevel = new Battery(initialBattery);
-        currDirection = Direction.valueOf(direction);
-        currPosition = new Coordinates(0,0,currDirection);
-    }
-    
-    public Direction getDirection(){
-        return currDirection;
+        currDirection = new Direction(direction); 
+        currPosition = new Coordinates(0, 0, currDirection);
     }
 
-    public int getBattery(){
+    public Direction.Directions getDirection() {
+        return currDirection.getCurrentDirection();
+    }
+
+    public int getBattery() {
         return batteryLevel.getBattery();
     }
 
-    // public JSONObject beginExplore(){
-    //     // search POI here and stuff
-    //     return
+    public void updateDirection(Direction currDirection) {
+        this.currDirection = currDirection;
+    }
 
-    // }
+    public void updateCoordinates(Coordinates currPosition) {
+        this.currPosition = currPosition;
+    }
 
-    
+    public JSONObject beginExplore() {
+        JSONObject decision;
+
+        if (finder.isComplete()) {
+            logger.info("** FOUND ISLAND");
+            actions.stop();
+            decision = actions.getDecision();
+        } else {
+            finder.setDrone(this, currInfo, currPosition);
+            decision = finder.locateIsland(currDirection);
+        }
+
+        return decision;
+    }
+
+    public void receiveResponse(int cost, Info currInfo) {
+        batteryLevel.deductBattery(cost);
+        this.currInfo = currInfo;
+    }
 }
