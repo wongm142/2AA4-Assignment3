@@ -1,38 +1,92 @@
 package ca.mcmaster.se2aa4.island.teamXXX;
 
-public enum Direction {
-    N,
-    E,
-    S,
-    W;
+public class Direction {
+    public enum Directions { N, E, S, W }
 
-    public Direction leftDirection() {
-        switch(this){
-            case N:
-                return W;
-            case W:
-                return S;
-            case S:
-                return E;
-            case E:
-                return N;
-            default:
-                throw new IllegalStateException("Unexpected Value: " + this);
+    public Directions currentDirection;
+
+    public Direction(Directions initialDirection) {
+        this.currentDirection = initialDirection;
+    }
+    public Direction(String initialDirection) {
+        if (initialDirection.equals("N")) {
+            this.currentDirection = Directions.N;
+        } else if (initialDirection.equals("E")) {
+            this.currentDirection = Directions.E;
+        } else if (initialDirection.equals("S")) {
+            this.currentDirection = Directions.S;
+        } else if (initialDirection.equals("W")) {
+            this.currentDirection = Directions.W;
         }
     }
 
-    public Direction rightDirection(){
-        switch(this){
+    // Turn left and update the current direction
+    public void turnLeft() {
+        switch (currentDirection) {
             case N:
-                return E;
-            case E:
-                return S;
-            case S:
-                return W;
+                currentDirection = Directions.W;
+                break;
             case W:
-                return N;
-            default:
-                throw new IllegalStateException("Unexpected Value: " + this);
+                currentDirection = Directions.S;
+                break;
+            case S:
+                currentDirection = Directions.E;
+                break;
+            case E:
+                currentDirection = Directions.N;
+                break;
         }
+    }
+
+    // Turn right and update the current direction
+    public void turnRight() {
+        switch (currentDirection) {
+            case N:
+                currentDirection = Directions.E;
+                break;
+            case E:
+                currentDirection = Directions.S;
+                break;
+            case S:
+                currentDirection = Directions.W;
+                break;
+            case W:
+                currentDirection = Directions.N;
+                break;
+        }
+    }
+
+    // See what is to the left without changing the current direction
+    public Directions seeLeft() {
+        switch (currentDirection) {
+            case N:
+                return Directions.W;
+            case W:
+                return Directions.S;
+            case S:
+                return Directions.E;
+            case E:
+                return Directions.N;
+        }
+        return currentDirection; // Fallback, though should never happen
+    }
+
+    // See what is to the right without changing the current direction
+    public Directions seeRight() {
+        switch (currentDirection) {
+            case N:
+                return Directions.E;
+            case E:
+                return Directions.S;
+            case S:
+                return Directions.W;
+            case W:
+                return Directions.N;
+        }
+        return currentDirection; // Fallback, though should never happen
+    }
+
+    public Directions getCurrentDirection() {
+        return currentDirection;
     }
 }
