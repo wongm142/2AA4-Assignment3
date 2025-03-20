@@ -14,19 +14,24 @@ public class Drone {
     private Direction currDirection;
     private Battery batteryLevel;
     private Coordinates currPosition;
-    private Actions actions;
-
-    private IslandFinder finder = new IslandFinder();
     private Info currInfo;
 
     public Drone(String direction, int initialBattery) {
         batteryLevel = new Battery(initialBattery);
-        currDirection = new Direction(direction); 
+        currDirection = Direction.valueOf(direction); 
         currPosition = new Coordinates(0, 0, currDirection);
     }
 
-    public Direction.Directions getDirection() {
-        return currDirection.getCurrentDirection();
+    public Direction getDirection(){
+        return currDirection;
+    }
+
+    public Coordinates getPosition(){
+        return currPosition;
+    }
+
+    public Info getInfo(){
+        return currInfo;
     }
 
     public int getBattery() {
@@ -39,21 +44,6 @@ public class Drone {
 
     public void updateCoordinates(Coordinates currPosition) {
         this.currPosition = currPosition;
-    }
-
-    public JSONObject beginExplore() {
-        JSONObject decision;
-
-        if (finder.isComplete()) {
-            logger.info("** FOUND ISLAND");
-            actions.stop();
-            decision = actions.getDecision();
-        } else {
-            finder.setDrone(this, currInfo, currPosition);
-            decision = finder.locateIsland(currDirection);
-        }
-
-        return decision;
     }
 
     public void receiveResponse(int cost, Info currInfo) {

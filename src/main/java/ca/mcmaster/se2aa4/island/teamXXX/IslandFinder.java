@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 public class IslandFinder {
     private final Logger logger = LogManager.getLogger();
+    private boolean turnRightOnUTurn;
     private boolean findingComplete = false;
     private Direction currDirection;
     private Coordinates coordinates;
@@ -36,6 +37,10 @@ public class IslandFinder {
         return findingComplete;
     }
 
+    public boolean shouldTurnRightOnUTurn() {
+        return turnRightOnUTurn;
+    }
+
     public JSONObject locateIsland(Direction currDirection){
         actions.reset();
         this.currDirection = currDirection;
@@ -47,18 +52,18 @@ public class IslandFinder {
     }
 
     private class DirectionRangePair {
-        Direction.Directions direction;
+        Direction direction;
         int range;
         String facing;
 
-        DirectionRangePair(Direction.Directions direction, int range, String facing){
+        DirectionRangePair(Direction direction, int range, String facing){
             this.direction = direction;
             this.range = range;
             this.facing = facing;
         }
     }
 
-    private void addDirectionAndSort(Direction.Directions direction, int range, String facing){
+    private void addDirectionAndSort(Direction direction, int range, String facing){
         directions.add(new DirectionRangePair(direction, range, facing));
         directions.sort((a, b) -> Integer.compare(b.range, a.range));
     }
@@ -69,26 +74,32 @@ public class IslandFinder {
         drone.updateCoordinates(coordinates);
     }
     
-    private void turnAndUpdate(Direction.Directions newDirection) {
+    private void turnAndUpdate(Direction newDirection) {
         actions.heading(newDirection);
+        logger.info("**");
+        logger.info("**");
+        logger.info("**");
+        logger.info("** NEW DIRECTION {}\n", newDirection);
+
         if (newDirection.equals(currDirection.seeLeft())) {
             coordinates.turnLeft();
-            currDirection.turnLeft();
+            drone.updateDirection(currDirection.seeLeft());
         }
         
         else {
             coordinates.turnRight();
-            currDirection.turnRight();
+            drone.updateDirection(currDirection.seeRight());
         }
 
-        drone.updateDirection(currDirection);
+        logger.info("UPDATED DIRECTION {}\n", currDirection);
+
         drone.updateCoordinates(coordinates);
     }
 
     private class InitialState implements IslandFinderStates {
         @Override
         public JSONObject handle(IslandFinder finder){
-            actions.echo(currDirection.getCurrentDirection());
+            actions.echo(currDirection);
             finder.setState(new InitialEcho());
             return actions.getDecision();
         }
@@ -100,11 +111,11 @@ public class IslandFinder {
             JSONObject extras = info.getExtras();
             String finding = extras.getString("found");
 
-            addDirectionAndSort(currDirection.getCurrentDirection(), extras.getInt("range"), "forwards");
+            addDirectionAndSort(currDirection, extras.getInt("range"), "forwards");
             
             if (finding.equals("GROUND")){
                 moveAndUpdate();
-                finder.setState(new MoveToIsland(extras.getInt("range") - 1));
+                finder.setState(new MoveToIsland(extras.getInt("range")));
             }
 
             else {
@@ -127,6 +138,7 @@ public class IslandFinder {
             if (finding.equals("GROUND")){
                 turnAndUpdate(currDirection.seeRight());
                 finder.setState(new MoveToIsland(extras.getInt("range") - 1));
+                turnRightOnUTurn = false;
             }
 
             else {
@@ -147,12 +159,14 @@ public class IslandFinder {
             if (finding.equals("GROUND")){
                 turnAndUpdate(currDirection.seeLeft());
                 finder.setState(new MoveToIsland(extras.getInt("range") - 1));
+                turnRightOnUTurn = true;
+
             }
 
             else {
                 addDirectionAndSort(currDirection.seeLeft(), extras.getInt("range"), "left");
 
-                Direction.Directions bestPath = directions.get(0).direction;
+                Direction bestPath = directions.get(0).direction;
                 if (directions.get(0).facing.equals("forwards")){
                     moveAndUpdate();
                 }
@@ -180,6 +194,7 @@ public class IslandFinder {
             if (finding.equals("GROUND")){
                 turnAndUpdate(currDirection.seeRight());
                 finder.setState(new MoveToIsland(extras.getInt("range") - 1));
+                turnRightOnUTurn = true;
             }
 
             else {
@@ -201,6 +216,7 @@ public class IslandFinder {
             if (finding.equals("GROUND")){
                 turnAndUpdate(currDirection.seeLeft());
                 finder.setState(new MoveToIsland(extras.getInt("range") - 1));
+                turnRightOnUTurn = false;
             }
 
             else {
@@ -219,8 +235,8 @@ public class IslandFinder {
             moveAndUpdate();
             stepsSinceLastEcho++;
 
-            // echo after every 3 moves 
-            if (stepsSinceLastEcho % 3 == 0){
+            // echo after every 1 move 
+            if (stepsSinceLastEcho % 1 == 0){
                 actions.echo(currDirection.seeRight());
                 finder.setState(new EchoRight());
             }
@@ -230,17 +246,21 @@ public class IslandFinder {
     }
 
     private class MoveToIsland implements IslandFinderStates {
-        private int stepsToIsland;
+        private int range;
+        private int flyCount;
 
         public MoveToIsland(int range){
-            this.stepsToIsland = range;
+            this.range = range;
+            flyCount = 0;
         }
 
         @Override
         public JSONObject handle(IslandFinder finder){
-            if (stepsToIsland > 0){
+
+            if (flyCount < range - 1){
                 moveAndUpdate();
-                stepsToIsland--;
+                flyCount++;
+                logger.info("** CURRENT HEADING {}", currDirection);
                 logger.info("** FLYING TO ISLAND");
 
             }

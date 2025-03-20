@@ -8,7 +8,7 @@ import eu.ace_design.island.bot.IExplorerRaid;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import ca.mcmaster.se2aa4.island.teamXXX.Direction.Directions;
+import ca.mcmaster.se2aa4.island.teamXXX.Direction;
 
 public class Actions {
     private JSONObject decision;
@@ -25,12 +25,12 @@ public class Actions {
         decision.put("action", "scan");
     }
 
-    public void echo(Directions direction){
+    public void echo(Direction direction){
         decision.put("action", "echo");
         decision.put("parameters", (new JSONObject()).put("direction", direction.toString()));
     }
 
-    public void heading(Directions direction){
+    public void heading(Direction direction){
         decision.put("action", "heading");
         decision.put("parameters", new JSONObject().put("direction", direction.toString()));
     }

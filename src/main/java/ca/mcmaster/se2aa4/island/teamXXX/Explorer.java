@@ -12,6 +12,10 @@ public class Explorer implements IExplorerRaid {
 
     private final Logger logger = LogManager.getLogger();
     private Drone drone;
+    private Translator trans = new Translator();
+    private IslandFinder finder = new IslandFinder();
+    private Actions actions;
+    private SearcherAlg searcher = new SearcherAlg();
 
     @Override
     public void initialize(String s) {
@@ -31,12 +35,28 @@ public class Explorer implements IExplorerRaid {
     public String takeDecision() {
         JSONObject decision = new JSONObject();
         
-        // can only do one decision at a time
-        decision.put("action", "scan");
+        if (drone.getBattery() < 35 || searcher.isComplete()){
+            actions.stop(); 
+            decision = actions.getDecision();
+        }
 
-        // decision.put("action", "stop"); // we stop the exploration immediately
+        else {
+            if (finder.isComplete()) {
+                logger.info("** SEARCHING ISLAND");
+                logger.info("** CURRENT HEADING {}", drone.getDirection());
+                // actions.stop(); 
+                // decision = actions.getDecision();
+                searcher.setDrone(drone, drone.getInfo(), drone.getPosition());
+                decision = searcher.search(drone.getDirection());
+            } 
+            
+            else {
+                finder.setDrone(drone, drone.getInfo(), drone.getPosition());
+                decision = finder.locateIsland(drone.getDirection());
+            }
+        }
 
-        logger.info("** Decision: {}",decision.toString());
+        logger.info("** Decision: {}", decision.toString());
         return decision.toString();
     }
 
@@ -44,16 +64,24 @@ public class Explorer implements IExplorerRaid {
     public void acknowledgeResults(String s) {
         JSONObject response = new JSONObject(new JSONTokener(new StringReader(s)));
         logger.info("** Response received:\n"+response.toString(2));
-        Integer cost = response.getInt("cost");
+        Info information = trans.translate(response);
+
+        Integer cost = information.getCost();
         logger.info("The cost of the action was {}", cost);
-        String status = response.getString("status");
+        String status = information.getStatus();
         logger.info("The status of the drone is {}", status);
-        JSONObject extraInfo = response.getJSONObject("extras");
+        JSONObject extraInfo = information.getExtras();
         logger.info("Additional information received: {}", extraInfo);
+
+        drone.receiveResponse(cost, information);
     }
 
     @Override
     public String deliverFinalReport() {
+        int finalBattery = drone.getBattery();
+        logger.info("** FINAL REPORT");
+        logger.info("Final Battery level {}", finalBattery);
+
         return "no creek found";
     }
 

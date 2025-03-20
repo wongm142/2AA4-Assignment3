@@ -1,7 +1,5 @@
 package ca.mcmaster.se2aa4.island.teamXXX;
 
-import ca.mcmaster.se2aa4.island.teamXXX.Direction.Directions;
-
 public class Coordinates {
     private int x;
     private int y;
@@ -30,7 +28,7 @@ public class Coordinates {
     }
 
     public void flyForwards(){
-        switch (direction.currentDirection){
+        switch (direction){
             case N:
                 y++;
                 break;
@@ -47,7 +45,7 @@ public class Coordinates {
     }
 
     public void turnLeft(){
-        switch (direction.currentDirection){
+        switch (direction){
             case N:
                 y++;
                 x--;
@@ -66,11 +64,11 @@ public class Coordinates {
                 break;
         }
 
-        this.direction.turnLeft();
+        this.direction = direction.seeLeft();
     }
 
     public void turnRight(){
-        switch (direction.currentDirection){
+        switch (direction){
             case N:
                 y++;
                 x++;
@@ -89,7 +87,7 @@ public class Coordinates {
                 break;
         }
 
-        this.direction.turnLeft();
+        this.direction = direction.seeRight();
     }
 
 }
