@@ -1,12 +1,15 @@
 package ca.mcmaster.se2aa4.island.teamXXX;
 
 import java.io.StringReader;
+import java.util.ArrayList;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import eu.ace_design.island.bot.IExplorerRaid;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import ca.mcmaster.se2aa4.island.teamXXX.DiscoveredPOIs;
 
 public class Explorer implements IExplorerRaid {
 
@@ -16,6 +19,7 @@ public class Explorer implements IExplorerRaid {
     private IslandFinder finder = new IslandFinder();
     private Actions actions;
     private SearcherAlg searcher = new SearcherAlg();
+    ArrayList<PointOfInterest> CreeksAndEmergencySitesFound = DiscoveredPOIs.CreeksAndEmergencySitesFound;
 
     @Override
     public void initialize(String s) {
@@ -82,7 +86,45 @@ public class Explorer implements IExplorerRaid {
         logger.info("** FINAL REPORT");
         logger.info("Final Battery level {}", finalBattery);
 
-        return "no creek found";
+        PointOfInterest closestCreek = findClosestCreek();
+
+        return closestCreek.getId();
+    }
+
+    public PointOfInterest findClosestCreek() {
+        PointOfInterest closestCreek = null;
+        
+        double minDistance = Integer.MAX_VALUE;
+
+        if (!CreeksAndEmergencySitesFound.isEmpty() && CreeksAndEmergencySitesFound.get(0) instanceof EmergencySite) {
+            EmergencySite emergencySite = (EmergencySite) CreeksAndEmergencySitesFound.get(0);
+            logger.info("** SITE FOUND ");
+            for (PointOfInterest poi : CreeksAndEmergencySitesFound) {
+                if (poi instanceof Creek) {
+                    double distance = poi.distanceFrom(emergencySite);
+                    if (distance < minDistance){
+                        minDistance = distance;
+                        closestCreek = poi;
+                    }
+                }
+            }
+        }
+
+        if (closestCreek != null) {
+            logger.info("** Closest Creek Found: {} at distance {}", closestCreek.getId(), minDistance);
+            return closestCreek;
+        }
+
+        for (PointOfInterest poi : CreeksAndEmergencySitesFound) {
+            if (poi instanceof Creek) {
+                logger.info("** No emergency site found. Returning random creek.");
+                return poi;
+            }
+        }
+
+        logger.info("** No creeks found");
+        return null;
+
     }
 
 }

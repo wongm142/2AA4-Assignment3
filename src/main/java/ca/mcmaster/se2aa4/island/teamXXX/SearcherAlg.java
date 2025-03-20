@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
+import ca.mcmaster.se2aa4.island.teamXXX.DiscoveredPOIs;
 
 public class SearcherAlg {
     private final Logger logger = LogManager.getLogger();
@@ -48,19 +49,22 @@ public class SearcherAlg {
         drone.updateCoordinates(coordinates);
     }
 
-    // private void checkPOI(JSOnObject extras){ 
-    //     JSONArray creeks = extras.getJSONArray("creeks");
-    //     JSONArray sites = extras.getJSONArray("sites");
+    private void checkPOI(JSONObject extras){ 
+        JSONArray creeks = extras.getJSONArray("creeks");
+        JSONArray sites = extras.getJSONArray("sites");
 
-    //     if (creeks.length() == 1){
-    //         String creekID = creeks.getString(0);
+        if (creeks.length() == 1){
+            String creekID = creeks.getString(0);
+            DiscoveredPOIs.CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coordinates(coordinates.getX(), coordinates.getY(), currDirection)));
+        }
 
-    //     }
-
-    //     if (sites.length() == 1){
-    //         logger.info("site found");
-    //     }
-    // }
+        if (sites.length() == 1){
+            String siteID = sites.getString(0);
+            DiscoveredPOIs.CreeksAndEmergencySitesFound.add(0, new EmergencySite(siteID, new Coordinates(coordinates.getX(), coordinates.getY(), currDirection)));
+            logger.info("site found");
+            searchingComplete = true;
+        }
+    }
     
     private void turnAndUpdate(Direction newDirection) {
         actions.heading(newDirection);
@@ -108,6 +112,8 @@ public class SearcherAlg {
             JSONObject extras = info.getExtras();
             JSONArray biomes = extras.getJSONArray("biomes");
 
+            checkPOI(extras);
+
             if (biomes.length() == 1){
                 if (biomes.get(0).equals("OCEAN")) {
                     actions.echo(currDirection);
@@ -135,15 +141,8 @@ public class SearcherAlg {
             }
 
             else {
-                if (range < 4){ 
-                    performUTurn(turnRightOnUTurn);
-                    searcher.setState(new UTurn());
-                }
-
-                else {
-                    moveAndUpdate();
-                    searcher.setState(new MoveAwayFromIsland(range));
-                }
+                performUTurn(turnRightOnUTurn);
+                searcher.setState(new UTurn());
             }
 
             return actions.getDecision();
@@ -170,34 +169,6 @@ public class SearcherAlg {
             else {
                 actions.scan();
                 searcher.setState(new Scan());
-            }
-
-            return actions.getDecision();
-        }
-    }
-
-    private class MoveAwayFromIsland implements SearcherAlgStates {
-        private int flyCount;
-        private int range;
-
-        private MoveAwayFromIsland(int range){
-            this.range = 0;
-            flyCount = 0;
-        }
-
-        @Override
-        public JSONObject handle(SearcherAlg searcher) {
-            if (flyCount < range) {
-                logger.info("** FLYING AWAY FROM ISLAND");
-                logger.info("** FLY COUNT {}", flyCount);
-                logger.info("** RANGE {}", range);
-                moveAndUpdate();
-                flyCount++;
-            }
-
-            else {
-                performUTurn(turnRightOnUTurn);
-                searcher.setState(new UTurn());
             }
 
             return actions.getDecision();
@@ -294,7 +265,6 @@ public class SearcherAlg {
                 case 2:
                     performUTurn(turnRightOnSweepTurn);
                     step++;
-                    // actions.stop();
                     break;
                 case 3:
                     performUTurn(turnRightOnSweepTurn);

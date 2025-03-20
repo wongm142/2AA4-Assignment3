@@ -9,12 +9,14 @@ public abstract class PointOfInterest {
         this.coord = coord;
     } 
 
-    private String getId(){
+    public String getId(){
         return this.id;
     }
 
-    public int distanceFrom(PointOfInterest POI){
-        return (Math.abs(this.coord.getX() - POI.coord.getX()) + Math.abs(this.coord.getY() - POI.coord.getY()));
+    public double distanceFrom(PointOfInterest POI) {
+        double dx = this.coord.getX() - POI.coord.getX();
+        double dy = this.coord.getY() - POI.coord.getY();
+        return Math.sqrt(dx * dx + dy * dy);
     }
 
     private Coordinates getCord(){
