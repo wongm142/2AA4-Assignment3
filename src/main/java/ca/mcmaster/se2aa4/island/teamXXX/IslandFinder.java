@@ -1,9 +1,10 @@
 package ca.mcmaster.se2aa4.island.teamXXX;
 
-import org.json.JSONObject;
+import java.util.ArrayList;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import java.util.ArrayList;
+import org.json.JSONObject;
 
 public class IslandFinder {
     private final Logger logger = LogManager.getLogger();

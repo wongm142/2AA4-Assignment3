@@ -5,11 +5,11 @@ import java.util.ArrayList;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import eu.ace_design.island.bot.IExplorerRaid;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import ca.mcmaster.se2aa4.island.teamXXX.DiscoveredPOIs;
+
+import eu.ace_design.island.bot.IExplorerRaid;
 
 public class Explorer implements IExplorerRaid {
 
@@ -19,6 +19,9 @@ public class Explorer implements IExplorerRaid {
     private IslandFinder finder = new IslandFinder();
     private Actions actions;
     private SearcherAlg searcher = new SearcherAlg();
+    private int stage = 0;
+    private SpiralAlgorithmRework alg = new SpiralAlgorithmRework();
+    
     ArrayList<PointOfInterest> CreeksAndEmergencySitesFound = DiscoveredPOIs.CreeksAndEmergencySitesFound;
 
     @Override
@@ -30,38 +33,96 @@ public class Explorer implements IExplorerRaid {
         Integer batteryLevel = info.getInt("budget");
 
         drone = new Drone(direction, batteryLevel);
-
+        
         logger.info("The drone is facing {}", direction);
         logger.info("Battery level is {}", batteryLevel);
     }
 
     @Override
     public String takeDecision() {
-        JSONObject decision = new JSONObject();
-        
-        if (drone.getBattery() < 35 || searcher.isComplete()){
-            actions.stop(); 
-            decision = actions.getDecision();
-        }
 
-        else {
-            if (finder.isComplete()) {
-                logger.info("** SEARCHING ISLAND");
-                logger.info("** CURRENT HEADING {}", drone.getDirection());
-                // actions.stop(); 
-                // decision = actions.getDecision();
-                searcher.setDrone(drone, drone.getInfo(), drone.getPosition());
-                decision = searcher.search(drone.getDirection());
-            } 
-            
-            else {
-                finder.setDrone(drone, drone.getInfo(), drone.getPosition());
-                decision = finder.locateIsland(drone.getDirection());
+        boolean foundMove = false;
+
+        while (!foundMove){
+            if (drone.getBattery() < 35 ){
+                logger.info("low battery, returning now");
+                stage =3;
             }
-        }
+            logger.info("re run");
+            JSONObject decision = new JSONObject();
+            foundMove = false;
+            if (stage ==0){
+                
+                if (finder.isComplete()) {
+                    logger.info("** FOUND ISLAND");
+                    //actions.stop();
+                    stage = 1;
+                    //decision = actions.getDecision();
+                } else {
+                    finder.setDrone(drone, drone.getInfo(), drone.getPosition());
+                    decision = finder.locateIsland(drone.getDirection());
+                    logger.info("** Decision: {}", decision.toString());
+                    return decision.toString();
+                }
+                
+            }else if(stage ==1){
+                logger.info("Stage 1");
+                if(searcher.isComplete()){
+                    logger.info("going to stage 2");
+                    stage = 2;
+                }
+        
+                else {
+                    if (finder.isComplete()) {
+                        logger.info("** SEARCHING ISLAND");
+                        logger.info("** CURRENT HEADING {}", drone.getDirection());
+                        // actions.stop(); 
+                        // decision = actions.getDecision();
+                        searcher.setDrone(drone, drone.getInfo(), drone.getPosition());
+                        decision = searcher.search(drone.getDirection());
+                    } 
+                    
+                    else {
+                        finder.setDrone(drone, drone.getInfo(), drone.getPosition());
+                        decision = finder.locateIsland(drone.getDirection());
+                    }
+                }
+                if (stage !=2){
+                    logger.info("** Decision: {}", decision.toString());
+                    return decision.toString();
+                }
+              
 
-        logger.info("** Decision: {}", decision.toString());
-        return decision.toString();
+            }else if(stage ==2){
+                logger.info("Stage 2");
+            
+                if (drone.getInfo().noCreek() == 1 || drone.getInfo().noCreek() == 2){
+                    logger.info("Searching for creek");
+                    decision = alg.doAlgorithm(drone);
+                    return decision.toString();
+
+                } else{
+                    JSONArray creeks = drone.getInfo().getExtras().getJSONArray("creeks");
+                    String creekID = creeks.getString(0);
+                    DiscoveredPOIs.CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coordinates(drone.getCoordinate())));
+        
+                    //add creek found to list
+                    stage = 3;
+                }
+                
+            }
+            else{ //stage 3
+                logger.info("Stage 3");
+                decision = new JSONObject();
+                decision.put("action", "stop");
+                logger.info("** Decision: {}",decision);
+                return decision.toString();
+            }
+
+        }
+        logger.info("should never be here");
+        return null;
+
     }
 
     @Override

@@ -1,26 +1,33 @@
 package ca.mcmaster.se2aa4.island.teamXXX;
 
-import java.util.ArrayList;
+import org.json.JSONObject;
+
+
 
 public class SpiralAlgorithmRework {
     private Actions action;
+    //private Drone drone;
 
     public SpiralAlgorithmRework(){
         this.action = new Actions();
+        //this.drone = drone;
     }
 
-    public ArrayList<String> doAlgorithm(int state, int i, int counter, Direction direction){
+    public JSONObject doAlgorithm(Drone drone){
         boolean correctAction = false;
         while (!correctAction){
-            switch (state) {
+            switch (drone.getState()) {
                 case 0: case 1: case 3:
-                    if (i == 0){
-                        this.action.heading(direction.seeLeft());
-                        direction.turnLeft();
+                    if (drone.getSubCounter() == 0){
+                        this.action.heading(drone.getDirection().seeLeft()); //left
+                        drone.updateDirection(drone.getDirection().seeLeft());
+                        Coordinates coords = drone.getCoordinate();
+                        coords.turnLeft();
+                        drone.updateCoordinates(coords);
                         correctAction = true;
                         break;
                     }
-                    else if(i ==1){
+                    else if(drone.getSubCounter() ==1){
                         this.action.scan();
                         correctAction = true;
                         break;
@@ -30,36 +37,39 @@ public class SpiralAlgorithmRework {
                     }
                     
                 case 2:
-                    correctAction = forwardCount(i, counter);
+                    correctAction = forwardCount(drone.getSubCounter(), drone.getCounter(), drone);
                     break;
                
                 case 4:
-                    correctAction = forwardCount(i+2, counter);
+                    correctAction = forwardCount(drone.getSubCounter()+2, drone.getCounter(), drone);
                     if (!correctAction){
-                        counter+=1;
+                        drone.setCounter(drone.getCounter()+1);
                     }
                     break;
             }
             if (!correctAction) {
-                i = 0;
-                if (state == 4) {
-                    state  = 1;
+                drone.setSubCounter(0);
+                if (drone.getState() == 4) {
+                    drone.setState(1);
                 }else{
-                    state +=1;
+                    drone.setState(drone.getState()+1);
                 }
             }
             else{
-                i++;
+                drone.setSubCounter(drone.getSubCounter()+1);
             }
         }
-        return populateResponse(state, i, counter, direction);
+        return this.action.getDecision();
     }
 
 
 
-    public boolean forwardCount(int i, int counter){
-        if(i < counter*2){
-            if (i % 2 == 0){
+    public boolean forwardCount(int subCounter, int counter, Drone drone){
+        if(subCounter < counter*2){
+            if (subCounter % 2 == 0){
+                Coordinates coords = drone.getCoordinate();
+                coords.flyForwards();
+                drone.updateCoordinates(coords);
                 this.action.fly();
                 return true;
             }else{
@@ -72,13 +82,13 @@ public class SpiralAlgorithmRework {
     
     }
 
-    private ArrayList<String> populateResponse(int state, int i, int counter, Direction direction){ 
-        ArrayList<String> response = new ArrayList<>();
-        response.add(action.getDecisionString());
-        response.add(Integer.toString(state));
-        response.add(Integer.toString(i));
-        response.add(Integer.toString(counter));
-        response.add(direction.currentDirection.toString());
-        return response;
-    }
+    // private ArrayList<String> populateResponse(int state, int subCounter, int counter, Direction direction){ 
+    //     ArrayList<String> response = new ArrayList<>();
+    //     response.add(action.getDecisionString());
+    //     response.add(Integer.toString(state));
+    //     response.add(Integer.toString(subCounter));
+    //     response.add(Integer.toString(counter));
+    //     response.add(direction.currentDirection.toString());
+    //     return response;
+    // }
 }

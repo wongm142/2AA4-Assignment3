@@ -1,5 +1,7 @@
 package ca.mcmaster.se2aa4.island.teamXXX;
 
+import com.vividsolutions.jts.geom.Coordinate;
+
 public class Coordinates {
     private int x;
     private int y;
@@ -9,6 +11,11 @@ public class Coordinates {
         this.x = x;
         this.y = y;
         this.direction = direction;
+    }
+    public Coordinates(Coordinates coord){
+        this.x = coord.getX();
+        this.y = coord.getY();
+        this.direction = coord.getDirection();
     }
 
     public int getX(){
