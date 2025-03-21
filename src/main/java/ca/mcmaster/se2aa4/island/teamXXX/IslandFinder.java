@@ -77,23 +77,20 @@ public class IslandFinder {
     
     private void turnAndUpdate(Direction newDirection) {
         actions.heading(newDirection);
-        logger.info("**");
-        logger.info("**");
-        logger.info("**");
-        logger.info("** NEW DIRECTION {}\n", newDirection);
 
         if (newDirection.equals(currDirection.seeLeft())) {
             coordinates.turnLeft();
-            drone.updateDirection(currDirection.seeLeft());
+            turnRightOnUTurn = true;
         }
         
         else {
             coordinates.turnRight();
-            drone.updateDirection(currDirection.seeRight());
+            turnRightOnUTurn = false;
         }
 
         logger.info("UPDATED DIRECTION {}\n", currDirection);
-
+        
+        drone.updateDirection(newDirection);
         drone.updateCoordinates(coordinates);
     }
 
@@ -102,6 +99,8 @@ public class IslandFinder {
         public JSONObject handle(IslandFinder finder){
             actions.echo(currDirection);
             finder.setState(new InitialEcho());
+
+            // actions.scan();
             return actions.getDecision();
         }
     }
@@ -139,7 +138,6 @@ public class IslandFinder {
             if (finding.equals("GROUND")){
                 turnAndUpdate(currDirection.seeRight());
                 finder.setState(new MoveToIsland(extras.getInt("range") - 1));
-                turnRightOnUTurn = false;
             }
 
             else {
@@ -160,8 +158,6 @@ public class IslandFinder {
             if (finding.equals("GROUND")){
                 turnAndUpdate(currDirection.seeLeft());
                 finder.setState(new MoveToIsland(extras.getInt("range") - 1));
-                turnRightOnUTurn = true;
-
             }
 
             else {
@@ -195,7 +191,6 @@ public class IslandFinder {
             if (finding.equals("GROUND")){
                 turnAndUpdate(currDirection.seeRight());
                 finder.setState(new MoveToIsland(extras.getInt("range") - 1));
-                turnRightOnUTurn = true;
             }
 
             else {
@@ -217,7 +212,6 @@ public class IslandFinder {
             if (finding.equals("GROUND")){
                 turnAndUpdate(currDirection.seeLeft());
                 finder.setState(new MoveToIsland(extras.getInt("range") - 1));
-                turnRightOnUTurn = false;
             }
 
             else {
@@ -258,7 +252,7 @@ public class IslandFinder {
         @Override
         public JSONObject handle(IslandFinder finder){
 
-            if (flyCount < range - 1){
+            if (flyCount < range + 2){
                 moveAndUpdate();
                 flyCount++;
                 logger.info("** CURRENT HEADING {}", currDirection);

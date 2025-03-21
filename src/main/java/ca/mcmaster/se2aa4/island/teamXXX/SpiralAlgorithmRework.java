@@ -1,15 +1,19 @@
 package ca.mcmaster.se2aa4.island.teamXXX;
 
+import java.util.ArrayList;
+
 import org.json.JSONObject;
 
 
 
 public class SpiralAlgorithmRework {
     private Actions action;
+    private ArrayList<Coordinates> coords;
     //private Drone drone;
 
-    public SpiralAlgorithmRework(){
+    public SpiralAlgorithmRework(ArrayList<Coordinates> coords){
         this.action = new Actions();
+        this.coords = coords;
         //this.drone = drone;
     }
 
@@ -28,6 +32,11 @@ public class SpiralAlgorithmRework {
                         break;
                     }
                     else if(drone.getSubCounter() ==1){
+                        if (coords.contains(drone.getCoordinate())){
+                            correctAction = false;
+                            break;
+                        }
+                        
                         this.action.scan();
                         correctAction = true;
                         break;
@@ -66,13 +75,21 @@ public class SpiralAlgorithmRework {
 
     public boolean forwardCount(int subCounter, int counter, Drone drone){
         if(subCounter < counter*2){
-            if (subCounter % 2 == 0){
-                Coordinates coords = drone.getCoordinate();
-                coords.flyForwards();
-                drone.updateCoordinates(coords);
+            Coordinates coord = drone.getCoordinate();
+            if (subCounter % 2 == 0 ){
+                coord.flyForwards();
+                drone.updateCoordinates(coord);
                 this.action.fly();
                 return true;
-            }else{
+            }else if(this.coords.contains(coord)){
+                coord.flyForwards();
+                drone.updateCoordinates(coord);
+                this.action.fly();
+                drone.setSubCounter(drone.getSubCounter()+1);
+                return true;
+            }
+            else{
+                
                 this.action.scan();
                 return true;
             }

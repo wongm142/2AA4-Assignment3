@@ -20,9 +20,10 @@ public class Explorer implements IExplorerRaid {
     private Actions actions;
     private SearcherAlg searcher = new SearcherAlg();
     private int stage = 0;
-    private SpiralAlgorithmRework alg = new SpiralAlgorithmRework();
     
-    ArrayList<PointOfInterest> CreeksAndEmergencySitesFound = DiscoveredPOIs.CreeksAndEmergencySitesFound;
+    ArrayList<PointOfInterest> CreeksAndEmergencySitesFound = new ArrayList<>();
+    ArrayList<Coordinates> ExploredCoords = new ArrayList<>();
+    private SpiralAlgorithmRework alg = new SpiralAlgorithmRework(ExploredCoords);
 
     @Override
     public void initialize(String s) {
@@ -44,29 +45,33 @@ public class Explorer implements IExplorerRaid {
         boolean foundMove = false;
 
         while (!foundMove){
-            if (drone.getBattery() < 35 ){
+            if (drone.getBattery() < 35){
                 logger.info("low battery, returning now");
-                stage =3;
+                stage = 3;
             }
+
             logger.info("re run");
             JSONObject decision = new JSONObject();
             foundMove = false;
-            if (stage ==0){
-                
+
+            if (stage == 0){
                 if (finder.isComplete()) {
                     logger.info("** FOUND ISLAND");
                     //actions.stop();
                     stage = 1;
                     //decision = actions.getDecision();
                 } else {
+                    // actions.scan();
+                    // decision = actions.getDecision();
                     finder.setDrone(drone, drone.getInfo(), drone.getPosition());
                     decision = finder.locateIsland(drone.getDirection());
                     logger.info("** Decision: {}", decision.toString());
                     return decision.toString();
                 }
                 
-            }else if(stage ==1){
+            }else if(stage == 1){
                 logger.info("Stage 1");
+
                 if(searcher.isComplete()){
                     logger.info("going to stage 2");
                     stage = 2;
@@ -78,8 +83,9 @@ public class Explorer implements IExplorerRaid {
                         logger.info("** CURRENT HEADING {}", drone.getDirection());
                         // actions.stop(); 
                         // decision = actions.getDecision();
-                        searcher.setDrone(drone, drone.getInfo(), drone.getPosition());
+                        searcher.setDrone(drone, drone.getInfo(), drone.getPosition(), CreeksAndEmergencySitesFound, ExploredCoords);
                         decision = searcher.search(drone.getDirection());
+
                     } 
                     
                     else {
@@ -87,30 +93,34 @@ public class Explorer implements IExplorerRaid {
                         decision = finder.locateIsland(drone.getDirection());
                     }
                 }
-                if (stage !=2){
+
+                if (stage != 2){
                     logger.info("** Decision: {}", decision.toString());
                     return decision.toString();
                 }
               
 
-            }else if(stage ==2){
+            }else if(stage == 2){
                 logger.info("Stage 2");
             
-                if (drone.getInfo().noCreek() == 1 || drone.getInfo().noCreek() == 2){
+                if (drone.getInfo().noCreek() == 1 || drone.getInfo().noCreek() == 2 || checkPOIs(drone.getCoordinate(), CreeksAndEmergencySitesFound)){
                     logger.info("Searching for creek");
                     decision = alg.doAlgorithm(drone);
+                    logger.info("** Decision: {}", decision.toString());
+
                     return decision.toString();
 
                 } else{
                     JSONArray creeks = drone.getInfo().getExtras().getJSONArray("creeks");
                     String creekID = creeks.getString(0);
-                    DiscoveredPOIs.CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coordinates(drone.getCoordinate())));
+                    CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coordinates(drone.getCoordinate())));
         
                     //add creek found to list
                     stage = 3;
                 }
                 
             }
+
             else{ //stage 3
                 logger.info("Stage 3");
                 decision = new JSONObject();
@@ -150,6 +160,16 @@ public class Explorer implements IExplorerRaid {
         PointOfInterest closestCreek = findClosestCreek();
 
         return closestCreek.getId();
+    }
+
+    public boolean checkPOIs(Coordinates coords, ArrayList<PointOfInterest> CreeksAndEmergencySitesFound ){ 
+        for (PointOfInterest poi : CreeksAndEmergencySitesFound){
+            if (coords.equals(poi.getCord())){
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public PointOfInterest findClosestCreek() {

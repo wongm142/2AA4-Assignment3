@@ -19,7 +19,7 @@ public abstract class PointOfInterest {
         return Math.sqrt(dx * dx + dy * dy);
     }
 
-    private Coordinates getCord(){
+    public Coordinates getCord(){
         return this.coord;
     }
 }

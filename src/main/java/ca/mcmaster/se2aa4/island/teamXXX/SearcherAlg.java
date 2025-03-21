@@ -5,7 +5,6 @@ import org.json.JSONObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
-import ca.mcmaster.se2aa4.island.teamXXX.DiscoveredPOIs;
 
 public class SearcherAlg {
     private final Logger logger = LogManager.getLogger();
@@ -18,15 +17,19 @@ public class SearcherAlg {
     private Drone drone;
     private Info info;
     private Actions actions = new Actions();
+    private ArrayList<PointOfInterest> CreeksAndEmergencySitesFound;
+    private ArrayList<Coordinates> ExploredCoords;
 
     public SearcherAlg(){
         state = new InitialState();
     }
     
-    public void setDrone(Drone drone, Info info, Coordinates coordinates){
+    public void setDrone(Drone drone, Info info, Coordinates coordinates, ArrayList<PointOfInterest> CreeksAndEmergencySitesFound, ArrayList<Coordinates> ExploredCoords){
         this.drone = drone;
         this.info = info;
         this.coordinates = coordinates;
+        this.ExploredCoords = ExploredCoords;
+        this.CreeksAndEmergencySitesFound = CreeksAndEmergencySitesFound;
     }
 
     public void setState(SearcherAlgStates state){
@@ -55,12 +58,12 @@ public class SearcherAlg {
 
         if (creeks.length() == 1){
             String creekID = creeks.getString(0);
-            DiscoveredPOIs.CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coordinates(coordinates.getX(), coordinates.getY(), currDirection)));
+            CreeksAndEmergencySitesFound.add(new Creek(creekID, drone.getPosition()));
         }
 
         if (sites.length() == 1){
             String siteID = sites.getString(0);
-            DiscoveredPOIs.CreeksAndEmergencySitesFound.add(0, new EmergencySite(siteID, new Coordinates(coordinates.getX(), coordinates.getY(), currDirection)));
+            CreeksAndEmergencySitesFound.add(0, new EmergencySite(siteID, drone.getPosition()));
             logger.info("site found");
             searchingComplete = true;
         }
@@ -70,16 +73,17 @@ public class SearcherAlg {
         actions.heading(newDirection);
 
         if (newDirection.equals(currDirection.seeLeft())) {
-            logger.info("** TURNING LEFT");
+            logger.info("Turning left");
             coordinates.turnLeft();
+            drone.updateDirection(currDirection.seeLeft());
         }
         
         else {
-            logger.info("TURNING RIGHT");
+            logger.info("Turning Right");
+            drone.updateDirection(currDirection.seeRight());
             coordinates.turnRight();
         }
 
-        drone.updateDirection(newDirection);
         drone.updateCoordinates(coordinates);
     }
 
@@ -100,6 +104,35 @@ public class SearcherAlg {
     private class InitialState implements SearcherAlgStates {
         @Override
         public JSONObject handle(SearcherAlg searcher) {
+            if (currDirection == currDirection.S) {
+                logger.info("TURNING LEFT");
+                turnAndUpdate(currDirection.seeLeft());
+                turnRightOnUTurn = true;
+                searcher.setState(new InitialTurn());
+            }
+
+            else if (currDirection == currDirection.N) {
+                logger.info("TURNIGN RIGHT");
+                turnAndUpdate(currDirection.seeRight());
+                turnRightOnUTurn = false;
+                searcher.setState(new InitialTurn());
+            }
+
+            else{
+                actions.scan();
+                searcher.setState(new Scan());
+            }
+
+            // actions.scan();
+            // searcher.setState(new Scan());
+
+            return actions.getDecision();
+        }
+    }
+
+    private class InitialTurn implements SearcherAlgStates {
+        @Override
+        public JSONObject handle(SearcherAlg searcher) {
             actions.scan();
             searcher.setState(new Scan());
             return actions.getDecision();
@@ -112,6 +145,7 @@ public class SearcherAlg {
             JSONObject extras = info.getExtras();
             JSONArray biomes = extras.getJSONArray("biomes");
 
+            ExploredCoords.add(drone.getPosition());
             checkPOI(extras);
 
             if (biomes.length() == 1){
@@ -123,7 +157,8 @@ public class SearcherAlg {
             }
 
             moveAndUpdate();
-            searcher.setState(new InitialState());
+            searcher.setState(new InitialTurn());
+            // searcher.setState(new InitialState());
             return actions.getDecision();
         }
     }
@@ -141,6 +176,8 @@ public class SearcherAlg {
             }
 
             else {
+                // moveAndUpdate();
+                // searcher.setState(new MoveAwayFromIsland(range));
                 performUTurn(turnRightOnUTurn);
                 searcher.setState(new UTurn());
             }
@@ -149,6 +186,31 @@ public class SearcherAlg {
         }
         
     }
+
+    // private class MoveAwayFromIsland implements SearcherAlgStates {
+    //     private int range;
+    //     private int flyCount;
+
+    //     public MoveAwayFromIsland(int range){
+    //         this.range = range;
+    //         flyCount = 0;
+    //     }
+
+    //     @Override
+    //     public JSONObject handle(SearcherAlg searcher){
+    //         if (flyCount < 4){
+    //             moveAndUpdate();
+    //             flyCount++;
+    //         }
+
+    //         else {
+    //             performUTurn(turnRightOnUTurn);
+    //             searcher.setState(new UTurn());
+    //         }
+
+    //         return actions.getDecision();
+    //     }
+    // }
 
     private class MoveToIsland implements SearcherAlgStates {
         private int range;
@@ -215,37 +277,38 @@ public class SearcherAlg {
             }
 
             else {
-                searcher.setState(new PrepareForSweepTurn(range));
-            }
-
-            return actions.getDecision();
-        }
-    }
-
-    private class PrepareForSweepTurn implements SearcherAlgStates {
-        private int range;
-        private int flyCount;
-        private boolean turnRightOnSweepTurn = !turnRightOnUTurn;
-
-        private PrepareForSweepTurn(int range) {
-            this.range = range - 2;
-            flyCount = 0;
-        }
-
-        public JSONObject handle(SearcherAlg searcher) {
-            if (flyCount < range) {
-                moveAndUpdate();
-                flyCount++;
-            }
-
-            else {
-                performUTurn(turnRightOnSweepTurn);
+                performUTurn(turnRightOnUTurn);
                 searcher.setState(new SweepTurn());
             }
 
             return actions.getDecision();
         }
     }
+
+    // private class PrepareForSweepTurn implements SearcherAlgStates {
+    //     private int range;
+    //     private int flyCount;
+    //     private boolean turnRightOnSweepTurn = !turnRightOnUTurn;
+
+    //     private PrepareForSweepTurn(int range) {
+    //         this.range = range - 2;
+    //         flyCount = 0;
+    //     }
+
+    //     public JSONObject handle(SearcherAlg searcher) {
+    //         if (flyCount < range) {
+    //             moveAndUpdate();
+    //             flyCount++;
+    //         }
+
+    //         else {
+    //             performUTurn(turnRightOnSweepTurn);
+    //             searcher.setState(new SweepTurn());
+    //         }
+
+    //         return actions.getDecision();
+    //     }
+    // }
 
     private class SweepTurn implements SearcherAlgStates {
         private int step;
@@ -259,24 +322,33 @@ public class SearcherAlg {
             logger.info("SWEEP TURN");
             switch(step) {
                 case 1:
-                    moveAndUpdate();
-                    step++;
-                    break;
-                case 2:
-                    performUTurn(turnRightOnSweepTurn);
-                    step++;
-                    break;
-                case 3:
-                    performUTurn(turnRightOnSweepTurn);
-                    step++;
-                    break;
-                case 4:
                     performUTurn(turnRightOnUTurn);
                     step++;
                     break;
+                case 2:
+                    performUTurn(turnRightOnUTurn);
+                    step++;
+                    break;
+                case 3:
+                    moveAndUpdate();
+                    step++;
+                    break;
+                case 4:
+                    moveAndUpdate();
+                    step++;
+                    break;
                 case 5:
+                    moveAndUpdate();
+                    step++;
+                    break;
+                case 6:
+                    performUTurn(turnRightOnUTurn);
+                    step++;
+                    break;
+                case 7:
                     actions.echo(currDirection);
                     searcher.setState(new EchoForward());
+                    turnRightOnUTurn = !turnRightOnUTurn;
                     break;
             }
             return actions.getDecision();
