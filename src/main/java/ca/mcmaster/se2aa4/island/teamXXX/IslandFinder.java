@@ -11,10 +11,12 @@ public class IslandFinder {
     private boolean turnRightOnUTurn;
     private boolean findingComplete = false;
     private Direction currDirection;
-    private Coordinates coordinates;
+    private Coord coordinates;
     private Drone drone;
     private Info info;
-    private Actions actions = new Actions();
+    private Action actions;
+    private ActionNoParam action;
+    private ActionWithParam actionWithParam;
     private IslandFinderStates state;
     private ArrayList<DirectionRangePair> directions = new ArrayList<>();
     private int echoCount = 0;
@@ -24,7 +26,7 @@ public class IslandFinder {
         state = new InitialState();
     }
 
-    public void setDrone(Drone drone, Info info, Coordinates coordinates) {
+    public void setDrone(Drone drone, Info info, Coord coordinates) {
         this.drone = drone;
         this.info = info;
         this.coordinates = coordinates;
@@ -43,7 +45,6 @@ public class IslandFinder {
     }
 
     public JSONObject locateIsland(Direction currDirection){
-        actions.reset();
         this.currDirection = currDirection;
         return state.handle(this);
     }
@@ -70,13 +71,17 @@ public class IslandFinder {
     }
 
     private void moveAndUpdate(){
-        actions.fly();
+        action = new Fly();
+        action.doAction();
+        actions = action;
         coordinates.flyForwards();
         drone.updateCoordinates(coordinates);
     }
     
     private void turnAndUpdate(Direction newDirection) {
-        actions.heading(newDirection);
+        actionWithParam = new Heading();
+        actionWithParam.doAction(newDirection);
+        actions = actionWithParam;
 
         if (newDirection.equals(currDirection.seeLeft())) {
             coordinates.turnLeft();
@@ -97,7 +102,9 @@ public class IslandFinder {
     private class InitialState implements IslandFinderStates {
         @Override
         public JSONObject handle(IslandFinder finder){
-            actions.echo(currDirection);
+            actionWithParam = new Echo();
+            actionWithParam.doAction(currDirection);
+            actions = actionWithParam;
             finder.setState(new InitialEcho());
 
             // actions.scan();
@@ -119,7 +126,9 @@ public class IslandFinder {
             }
 
             else {
-                actions.echo(currDirection.seeRight());
+                actionWithParam = new Echo();
+                actionWithParam.doAction(currDirection.seeRight());
+                actions = actionWithParam;
                 finder.setState(new InitialEchoRight());
             }
 
@@ -141,7 +150,9 @@ public class IslandFinder {
             }
 
             else {
-                actions.echo(currDirection.seeLeft());
+                actionWithParam = new Echo();
+                actionWithParam.doAction(currDirection.seeLeft());
+                actions = actionWithParam;
                 finder.setState(new InitialEchoLeft());
             }
 
@@ -194,7 +205,9 @@ public class IslandFinder {
             }
 
             else {
-                actions.echo(currDirection.seeLeft());
+                actionWithParam = new Echo();
+                actionWithParam.doAction(currDirection.seeLeft());
+                actions = actionWithParam;
                 finder.setState(new EchoLeft());
             }
 
@@ -232,7 +245,9 @@ public class IslandFinder {
 
             // echo after every 1 move 
             if (stepsSinceLastEcho % 1 == 0){
-                actions.echo(currDirection.seeRight());
+                actionWithParam = new Echo();
+                actionWithParam.doAction(currDirection.seeRight());
+                actions = actionWithParam;
                 finder.setState(new EchoRight());
             }
 
@@ -261,7 +276,9 @@ public class IslandFinder {
             }
 
             else {
-                actions.scan();
+                action = new Scan();
+                action.doAction();
+                actions = action;
                 findingComplete = true;
 
                 logger.info("** FOUND ISLAND");

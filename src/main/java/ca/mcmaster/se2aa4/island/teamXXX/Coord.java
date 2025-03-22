@@ -1,6 +1,6 @@
 package ca.mcmaster.se2aa4.island.teamXXX;
 
-public class Coordinates {
+public class Coord {
     private int x;
     private int y;
     private Direction direction;
@@ -9,17 +9,17 @@ public class Coordinates {
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
-        Coordinates that = (Coordinates) obj;
+        Coord that = (Coord) obj;
         return x == that.x && y == that.y;
     }
     
 
-    public Coordinates(int x, int y, Direction direction){
+    public Coord(int x, int y, Direction direction){
         this.x = x;
         this.y = y;
         this.direction = direction;
     }
-    public Coordinates(Coordinates coord){
+    public Coord(Coord coord){
         this.x = coord.getX();
         this.y = coord.getY();
         this.direction = coord.getDirection();

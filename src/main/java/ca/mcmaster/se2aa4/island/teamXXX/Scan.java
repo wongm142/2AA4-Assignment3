@@ -2,7 +2,7 @@ package ca.mcmaster.se2aa4.island.teamXXX;
 
 import org.json.JSONObject;
 
-public class Scan implements Action {
+public class Scan implements ActionNoParam {
     private JSONObject decision;
 
     public Scan(){
@@ -23,7 +23,7 @@ public class Scan implements Action {
     public String getDecisionString(){
         return decision.toString();
     }
-    
+
     @Override
     public void reset(){
         decision = new JSONObject();

@@ -1,130 +1,121 @@
-// package ca.mcmaster.se2aa4.island.teamXXX;
+package ca.mcmaster.se2aa4.island.teamXXX;
 
-// import java.util.ArrayList;
+import java.util.ArrayList;
 
-// public class SpiralAlgorithm extends Algorithm {
+import org.json.JSONObject;
 
-//     public SpiralAlgorithm(){
-//         super();
-//     }
+public class SpiralAlgorithm {
+
+    private ArrayList<Coord> coords;
+    Action actions;
+    //private Drone drone;
+
+    public SpiralAlgorithm(ArrayList<Coord> coords){
+        //this.action = new Actions();
+        this.coords = coords;
+        //this.drone = drone;
+    }
+
+    public JSONObject doAlgorithm(Drone drone){
+        boolean correctAction = false;
+        boolean skip = false;
+        while (!correctAction || skip){
+            correctAction = false;
+            skip = false;
+            switch (drone.getState()) {
+                case 0: case 1: case 3:
+                    if (drone.getSubCounter() == 0){
+                        ActionWithParam action = new Heading();
+                        action.doAction(drone.getDirection().seeLeft());
+                        this.actions = action;
+                        // this.action.heading(drone.getDirection().seeLeft()); //left
+                        drone.updateDirection(drone.getDirection().seeLeft());
+                        Coord coords = drone.getPosition();
+                        coords.turnLeft();
+                        drone.updateCoordinates(coords);
+                        correctAction = true;
+                        break;
+                    }
+                    else if(drone.getSubCounter() ==1){
+                        if (coords.contains(drone.getPosition())){
+                            correctAction = true;
+                            skip = true;
+                            break; 
+                        }
+                        ActionNoParam action = new Scan();
+                        action.doAction();
+                        this.actions = action;
+                        // this.action.scan();
+                        correctAction = true;
+                        break;
+                    }else{
+                        correctAction = false;
+                        break;
+                    }
+                    
+                case 2:
+                    correctAction = forwardCount(drone.getSubCounter(), drone.getCounter(), drone);
+                    break;
+               
+                case 4:
+                    correctAction = forwardCount(drone.getSubCounter()+2, drone.getCounter(), drone);
+                    break;
+            }
+            if (!correctAction) {
+                drone.setSubCounter(0);
+                if (drone.getState() == 4) {
+                    drone.setCounter(drone.getCounter()+1);
+                    drone.setState(1);
+                }else{
+                    drone.setState(drone.getState()+1);
+                }
+            }
+            else{
+                drone.setSubCounter(drone.getSubCounter()+1);
+            }
+        }
+        return actions.getDecision();
+    }
+
+
+
+    public boolean forwardCount(int subCounter, int counter, Drone drone){
+        while (true){
+            if(subCounter < counter*2){
+                Coord coord = new Coord(drone.getPosition());
+                if (subCounter % 2 == 0 ){
+                    coord.flyForwards();
+                    drone.updateCoordinates(coord);
+                    ActionNoParam action = new Fly();
+                    action.doAction();
+                    this.actions = action;
+                    // this.action.fly();
+                    return true;
+                }else if (coords.contains(drone.getPosition())) {
+                    subCounter +=1;
+                    drone.setSubCounter(drone.getSubCounter()+1);
+                }
+                else{
+                    ActionNoParam action = new Scan();
+                    action.doAction();
+                    this.actions = action;
+                    // this.action.scan();
+                    return true;
+                }
+            }else{
+                return false;
+            }
+        }
     
-//     public ArrayList<String> doAlgorithm(int state, int i, int revolution, Direction direction){
-  
-//         boolean correct_action = false;
-        
-//         while (!correct_action) {
-//             switch (state) {
-//                 case 0: //move to top right corner of new revolution
-//                     if (revolution == 0) {
-//                         correct_action = corner1(i, direction);
-//                     } else {
-//                         correct_action = corner2(i, direction);
-//                     }
-//                     break; // Exit switch, then check while condition
-//                 case 1: case 4: case 7: case 10:  // Move to beginning of next sweep of spiral (ex North -> South Sweep into East -> West Sweep)
-//                     correct_action = leftSpin(i, direction);
-//                     break;
-//                 case 2: case 5: case 8: case 11: // Move forward to next unscanned area (continue sweep)
-//                     correct_action = forwardBig(i, revolution);
-//                     break;
-//                 case 3: case 6: case 9: // Move forward to next unscanned area -1 and position your self for next sweep of spiral (final step of sweep)
-//                     correct_action = forwardSmall(i);
-//                     break;
-//                 }
-//             if (!correct_action) {
-//                 i = 0;
-//                 if (state == 11) {
-//                     revolution +=1;
-//                 } 
-//                 state = (state + 1) % 12 ;  // Move to next state
-//             }
-//             else{
-//                 i++;
-//             }
-//         }
-//         return populateResponse(state, i, revolution, direction);
-//     }
+    }
 
-//     public boolean corner1(int i, Direction direction){
-//         switch (i) {
-//             case 0:
-//                 this.action.heading(direction.seeRight());
-//                 direction.turnRight();
-//                 break;
-//             case 1:
-//                 this.action.fly();
-//                 break;
-//             case 2:
-//                 this.action.heading(direction.seeLeft());
-//                 direction.turnLeft();
-//                 break;
-//             default:
-//                 return false;
-            
-//         }
-//         return true;
-//     }
-
-//     public boolean corner2(int i, Direction direction){
-//         switch (i) {
-//             case 0:
-//                 this.action.heading(direction.seeRight());
-//                 direction.turnRight();
-//                 break;
-//             case 1: case 3:
-//                 this.action.fly();
-//                 break;
-//             case 2:
-//                 this.action.heading(direction.seeLeft());
-//                 direction.turnLeft();
-//                 break;
-//             default:
-//                 return false;
-//         }
-//         return true;
-//     }
-//     public boolean leftSpin(int i, Direction direction){
-//         switch (i) {
-//             case 0:
-//                 this.action.heading(direction.seeLeft());
-//                 direction.turnLeft();
-//                 break;
-//             case 1: case 2:
-//                 this.action.fly();
-//                 break;
-//             default:
-//                 return false;
-//         }
-//         return true;
-//     }
-
-//     public boolean forwardSmall(int i){
-//         switch (i) {
-//             case 0: case 1:
-//                 this.action.fly();
-//                 break;
-//             default:
-//                 return false;
-//         }
-//         return true;
-//     }
-
-//     public boolean forwardBig(int i, int revolution){
-//         if(i < revolution*2 ){
-//             this.action.fly();
-//             return true;
-//         }else{
-//             return false;
-//         }
-//     }
-//     private ArrayList<String> populateResponse(int state, int i, int revolution, Direction direction){ 
-//         ArrayList<String> response = new ArrayList<>();
-//         response.add(action.getDecisionString());
-//         response.add(Integer.toString(state));
-//         response.add(Integer.toString(i));
-//         response.add(Integer.toString(revolution));
-//         response.add(direction.currentDirection.toString());
-//         return response;
-//     }
-// }
-   
+    // private ArrayList<String> populateResponse(int state, int subCounter, int counter, Direction direction){ 
+    //     ArrayList<String> response = new ArrayList<>();
+    //     response.add(action.getDecisionString());
+    //     response.add(Integer.toString(state));
+    //     response.add(Integer.toString(subCounter));
+    //     response.add(Integer.toString(counter));
+    //     response.add(direction.currentDirection.toString());
+    //     return response;
+    // }
+}

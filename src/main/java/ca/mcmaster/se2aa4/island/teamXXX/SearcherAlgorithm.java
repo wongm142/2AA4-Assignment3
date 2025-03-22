@@ -7,25 +7,27 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class SearcherAlg {
+public class SearcherAlgorithm {
     private final Logger logger = LogManager.getLogger();
     private IslandFinder finder = new IslandFinder();
     private boolean turnRightOnUTurn = finder.shouldTurnRightOnUTurn();
     private boolean searchingComplete = false;
     private SearcherAlgStates state;
     private Direction currDirection;
-    private Coordinates coordinates;
+    private Coord coordinates;
     private Drone drone;
     private Info info;
-    private Actions actions = new Actions();
+    private Action actions;
+    private ActionNoParam action;
+    private ActionWithParam actionWithParam;
     private ArrayList<PointOfInterest> CreeksAndEmergencySitesFound;
-    private ArrayList<Coordinates> ExploredCoords;
+    private ArrayList<Coord> ExploredCoords;
 
-    public SearcherAlg(){
+    public SearcherAlgorithm(){
         state = new InitialState();
     }
     
-    public void setDrone(Drone drone, Info info, Coordinates coordinates, ArrayList<PointOfInterest> CreeksAndEmergencySitesFound, ArrayList<Coordinates> ExploredCoords){
+    public void setDrone(Drone drone, Info info, Coord coordinates, ArrayList<PointOfInterest> CreeksAndEmergencySitesFound, ArrayList<Coord> ExploredCoords){
         this.drone = drone;
         this.info = info;
         this.coordinates = coordinates;
@@ -42,13 +44,14 @@ public class SearcherAlg {
     }
 
     public JSONObject search(Direction currDirection) {
-        actions.reset();
         this.currDirection = currDirection;
         return state.handle(this);
     }
 
     private void moveAndUpdate(){
-        actions.fly();
+        action = new Fly();
+        action.doAction();
+        actions = action;
         coordinates.flyForwards();
         drone.updateCoordinates(coordinates);
     }
@@ -59,19 +62,21 @@ public class SearcherAlg {
 
         if (creeks.length() > 0){
             String creekID = creeks.getString(0);
-            CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coordinates(drone.getPosition())));
+            CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coord(drone.getPosition())));
         }
 
         if (sites.length() == 1){
             String siteID = sites.getString(0);
-            CreeksAndEmergencySitesFound.add(0, new EmergencySite(siteID, new Coordinates(drone.getPosition())));
+            CreeksAndEmergencySitesFound.add(0, new EmergencySite(siteID, new Coord(drone.getPosition())));
             logger.info("site found");
             searchingComplete = true;
         }
     }
     
     private void turnAndUpdate(Direction newDirection) {
-        actions.heading(newDirection);
+        actionWithParam = new Heading();
+        actionWithParam.doAction(newDirection);
+        actions = actionWithParam;
 
         if (newDirection.equals(currDirection.seeLeft())) {
             logger.info("Turning left");
@@ -98,12 +103,13 @@ public class SearcherAlg {
     }
 
     public interface SearcherAlgStates {
-        public JSONObject handle(SearcherAlg searcher);
+        public JSONObject handle(SearcherAlgorithm searcher);
     }
 
     private class InitialState implements SearcherAlgStates {
         @Override
-        public JSONObject handle(SearcherAlg searcher) {
+        public JSONObject handle(SearcherAlgorithm searcher) {
+
             if (currDirection == currDirection.S) {
                 logger.info("TURNING LEFT");
                 turnAndUpdate(currDirection.seeLeft());
@@ -119,40 +125,41 @@ public class SearcherAlg {
             }
 
             else{
-                actions.scan();
-                searcher.setState(new Scan());
+                action = new Scan();
+                action.doAction();
+                searcher.setState(new ScanPlace());
             }
 
-            // actions.scan();
-            // searcher.setState(new Scan());
-
+            actions = action;
             return actions.getDecision();
         }
     }
 
     private class InitialTurn implements SearcherAlgStates {
         @Override
-        public JSONObject handle(SearcherAlg searcher) {
-            actions.scan();
-            searcher.setState(new Scan());
-            return actions.getDecision();
+        public JSONObject handle(SearcherAlgorithm searcher) {
+            action = new Scan();
+            action.doAction();
+            searcher.setState(new ScanPlace());
+            return action.getDecision();
         }
     }
 
-    private class Scan implements SearcherAlgStates {
+    private class ScanPlace implements SearcherAlgStates {
         @Override
-        public JSONObject handle(SearcherAlg searcher) {
+        public JSONObject handle(SearcherAlgorithm searcher) {
             JSONObject extras = info.getExtras();
             JSONArray biomes = extras.getJSONArray("biomes");
 
             checkPOI(extras);
-            ExploredCoords.add(new Coordinates(drone.getPosition()));
+            ExploredCoords.add(new Coord(drone.getPosition()));
 
             if (biomes.length() == 1){
                 if (biomes.get(0).equals("OCEAN")) {
-                    actions.echo(currDirection);
+                    actionWithParam = new Echo();
+                    actionWithParam.doAction(currDirection);
                     searcher.setState(new EchoForward());
-                    return actions.getDecision();
+                    return actionWithParam.getDecision();
                 }
             }
 
@@ -160,13 +167,13 @@ public class SearcherAlg {
 
             searcher.setState(new InitialTurn());
             // searcher.setState(new InitialState());
-            return actions.getDecision();
+            return action.getDecision();
         }
     }
 
     private class EchoForward implements SearcherAlgStates {
         @Override
-        public JSONObject handle(SearcherAlg searcher) {
+        public JSONObject handle(SearcherAlgorithm searcher) {
             JSONObject extras = info.getExtras();
             String finding = extras.getString("found");
             int range = extras.getInt("range");
@@ -198,7 +205,7 @@ public class SearcherAlg {
     //     }
 
     //     @Override
-    //     public JSONObject handle(SearcherAlg searcher){
+    //     public JSONObject handle(SearcherAlgorithm searcher){
     //         if (flyCount < 4){
     //             moveAndUpdate();
     //             flyCount++;
@@ -223,18 +230,19 @@ public class SearcherAlg {
         }
 
         @Override
-        public JSONObject handle(SearcherAlg searcher){
+        public JSONObject handle(SearcherAlgorithm searcher){
             if (flyCount < range){
                 moveAndUpdate();
                 flyCount++;
             }
 
             else {
-                actions.scan();
-                searcher.setState(new Scan());
+                action = new Scan();
+                action.doAction();
+                searcher.setState(new ScanPlace());
             }
 
-            return actions.getDecision();
+            return action.getDecision();
         }
     }
 
@@ -246,7 +254,7 @@ public class SearcherAlg {
         }
 
         @Override
-        public JSONObject handle(SearcherAlg searcher) {
+        public JSONObject handle(SearcherAlgorithm searcher) {
             if (turnCount < 2){
                 logger.info("** UTURNING {}", turnCount);
                 logger.info("** SHOULD TURN RIGHT ON UTURN {}", turnRightOnUTurn);
@@ -256,17 +264,18 @@ public class SearcherAlg {
 
             else {
                 turnRightOnUTurn = !turnRightOnUTurn;
-                actions.echo(currDirection);
+                actionWithParam = new Echo();
+                actionWithParam.doAction(currDirection);
                 searcher.setState(new CheckInterlacedScanCompletion());
             }
 
-            return actions.getDecision();
+            return actionWithParam.getDecision();
         }
     }
 
     private class CheckInterlacedScanCompletion implements SearcherAlgStates {
         @Override
-        public JSONObject handle(SearcherAlg searcher) {
+        public JSONObject handle(SearcherAlgorithm searcher) {
             JSONObject extras = info.getExtras();
             String finding = extras.getString("found");
             int range = extras.getInt("range");
@@ -295,7 +304,7 @@ public class SearcherAlg {
     //         flyCount = 0;
     //     }
 
-    //     public JSONObject handle(SearcherAlg searcher) {
+    //     public JSONObject handle(SearcherAlgorithm searcher) {
     //         if (flyCount < range) {
     //             moveAndUpdate();
     //             flyCount++;
@@ -318,7 +327,7 @@ public class SearcherAlg {
             step = 1;
         }
 
-        public JSONObject handle(SearcherAlg searcher) {
+        public JSONObject handle(SearcherAlgorithm searcher) {
             logger.info("SWEEP TURN");
             switch(step) {
                 case 1:
@@ -346,7 +355,9 @@ public class SearcherAlg {
                     step++;
                     break;
                 case 7:
-                    actions.echo(currDirection);
+                    actionWithParam = new Echo();
+                    actionWithParam.doAction(currDirection);
+                    actions = actionWithParam;
                     searcher.setState(new EchoForward());
                     turnRightOnUTurn = !turnRightOnUTurn;
                     // actions.stop();

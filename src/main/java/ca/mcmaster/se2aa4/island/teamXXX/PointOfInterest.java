@@ -2,9 +2,9 @@ package ca.mcmaster.se2aa4.island.teamXXX;
 
 public abstract class PointOfInterest {
     private final String id;
-    Coordinates coord; 
+    Coord coord; 
     
-    public PointOfInterest(String id, Coordinates coord){
+    public PointOfInterest(String id, Coord coord){
         this.id = id;
         this.coord = coord;
     } 
@@ -19,7 +19,7 @@ public abstract class PointOfInterest {
         return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
     }
 
-    public Coordinates getCord(){
+    public Coord getCord(){
         return this.coord;
     }
 }

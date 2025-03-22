@@ -17,15 +17,16 @@ public class Explorer implements IExplorerRaid {
     private Drone drone;
     private Translator trans = new Translator();
     private IslandFinder finder = new IslandFinder();
-    private Actions actions = new Actions();
-    private SearcherAlg searcher = new SearcherAlg();
+    private Action actions;
+
+    private SearcherAlgorithm searcher = new SearcherAlgorithm();
     private int stage = 0;
     private int flag = 0;
     private boolean foundCreekUsingSpiral = false;
 
     ArrayList<PointOfInterest> CreeksAndEmergencySitesFound = new ArrayList<>();
-    ArrayList<Coordinates> ExploredCoords = new ArrayList<>();
-    private SpiralAlgorithmRework alg = new SpiralAlgorithmRework(ExploredCoords);
+    ArrayList<Coord> ExploredCoords = new ArrayList<>();
+    private SpiralAlgorithm alg = new SpiralAlgorithm(ExploredCoords);
 
     @Override
     public void initialize(String s) {
@@ -109,13 +110,15 @@ public class Explorer implements IExplorerRaid {
                     JSONArray creeks = extras.getJSONArray("creeks");
                     String creekID = creeks.getString(0);
                     logger.info("creekID {}", creekID);
-                    CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coordinates(drone.getPosition())));
+                    CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coord(drone.getPosition())));
                     stage = 3;
                     foundCreekUsingSpiral = true;
                 }
 
                 if (drone.getCounter() != 0 && checkPOIs(drone.getPosition(), CreeksAndEmergencySitesFound)) {
-                    actions.scan();
+                    ActionNoParam action = new Scan();
+                    action.doAction();
+                    this.actions = action;
                     flag = 1;
                     return actions.getDecisionString();
                 }
@@ -137,7 +140,7 @@ public class Explorer implements IExplorerRaid {
                     logger.info("Add creek to list ELSE");
                     JSONArray creeks = drone.getInfo().getExtras().getJSONArray("creeks");
                     String creekID = creeks.getString(0);
-                    CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coordinates(drone.getPosition())));
+                    CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coord(drone.getPosition())));
                     foundCreekUsingSpiral = true;
 
                     //add creek found to list
@@ -149,7 +152,9 @@ public class Explorer implements IExplorerRaid {
             else{ //stage 3
                 logger.info("Stage 3");
                 decision = new JSONObject();
-                decision.put("action", "stop");
+                ActionNoParam action = new Stop();
+                action.doAction();
+                decision = action.getDecision();
                 logger.info("** Decision: {}",decision);
                 return decision.toString();
             }
@@ -188,7 +193,7 @@ public class Explorer implements IExplorerRaid {
         return closestCreek.getId();
     }
 
-    public boolean checkPOIs(Coordinates coords, ArrayList<PointOfInterest> CreeksAndEmergencySitesFound ){ 
+    public boolean checkPOIs(Coord coords, ArrayList<PointOfInterest> CreeksAndEmergencySitesFound ){ 
         for (PointOfInterest poi : CreeksAndEmergencySitesFound){
             if (coords.equals(poi.getCord())){
                 return true;

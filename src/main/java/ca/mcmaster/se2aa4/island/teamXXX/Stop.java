@@ -2,9 +2,9 @@ package ca.mcmaster.se2aa4.island.teamXXX;
 
 import org.json.JSONObject;
 
-public class Stop implements Action {
+public class Stop implements ActionNoParam {
     private JSONObject decision;
-    
+
     public Stop(){
         decision = new JSONObject();
     }

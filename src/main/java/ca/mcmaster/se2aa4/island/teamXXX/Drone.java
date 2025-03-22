@@ -11,14 +11,13 @@ import eu.ace_design.island.bot.IExplorerRaid;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import com.vividsolutions.jts.geom.Coordinate;
 
 public class Drone {
     //private final Logger logger = LogManager.getLogger();
 
     private Direction currDirection;
     private Battery batteryLevel;
-    private Coordinates currPosition;
+    private Coord currPosition;
     //Spiral Alg instance variables and uses currDirection
     private Integer state = 0;
     private Integer counter = 0;
@@ -30,14 +29,14 @@ public class Drone {
     public Drone(String direction, int initialBattery) {
         batteryLevel = new Battery(initialBattery);
         currDirection = Direction.valueOf(direction); 
-        currPosition = new Coordinates(0, 0, currDirection);
+        currPosition = new Coord(0, 0, currDirection);
     }
 
     public Direction getDirection(){
         return currDirection;
     }
 
-    public Coordinates getPosition(){
+    public Coord getPosition(){
         return currPosition;
     }
 
@@ -53,7 +52,7 @@ public class Drone {
         this.currDirection = currDirection;
     }
 
-    public void updateCoordinates(Coordinates currPosition) {
+    public void updateCoordinates(Coord currPosition) {
         this.currPosition = currPosition;
     }
 

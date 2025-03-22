@@ -2,7 +2,7 @@ package ca.mcmaster.se2aa4.island.teamXXX;
 
 import org.json.JSONObject;
 
-public class Fly implements Action {
+public class Fly implements ActionNoParam {
     private JSONObject decision;
     public Fly(){
         decision = new JSONObject();
