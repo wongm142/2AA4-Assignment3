@@ -17,9 +17,10 @@ public class Explorer implements IExplorerRaid {
     private Drone drone;
     private Translator trans = new Translator();
     private IslandFinder finder = new IslandFinder();
-    private Actions actions;
+    private Actions actions = new Actions();
     private SearcherAlg searcher = new SearcherAlg();
     private int stage = 0;
+    private int flag = 0;
     
     ArrayList<PointOfInterest> CreeksAndEmergencySitesFound = new ArrayList<>();
     ArrayList<Coordinates> ExploredCoords = new ArrayList<>();
@@ -103,26 +104,43 @@ public class Explorer implements IExplorerRaid {
             }else if(stage == 2){
                 logger.info("Stage 2");
 
-                if (drone.getCounter() != 0 && checkPOIs(drone.getCoordinate(), CreeksAndEmergencySitesFound)) {
+                if (flag == 2) {
+                    logger.info("Add creek to list IF FLAG");
+                    JSONObject extras = drone.getInfo().getExtras();
+                    JSONArray creeks = extras.getJSONArray("creeks");
+                    String creekID = creeks.getString(0);
+                    logger.info("creekID {}", creekID);
+                    CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coordinates(drone.getPosition())));
                     stage = 3;
                 }
 
-                else if (drone.getInfo().noCreek() == 1 || drone.getInfo().noCreek() == 2){
+                if (drone.getCounter() != 0 && checkPOIs(drone.getPosition(), CreeksAndEmergencySitesFound)) {
+                    logger.info("Scanning Creek");
+                    flag = 2;
+                    actions.scan();
+                    decision = actions.getDecision();
+                    logger.info("5");
+                    return decision.toString();
+                }
+        
+                if (drone.getInfo().noCreek() == 1 || drone.getInfo().noCreek() == 2){
                     logger.info("Searching for creek");
                     logger.info("** State: {}", drone.getState());
                     logger.info("** SubCount: {}", drone.getSubCounter());
                     logger.info("**Counter: {}" ,drone.getCounter());
                     decision = alg.doAlgorithm(drone);
                     logger.info("** Decision: {}", decision.toString());
-                    
+
                     // logger.info("**")
 
                     return decision.toString();
-
-                } else{
+                } 
+                
+                else{
+                    logger.info("Add creek to list ELSE");
                     JSONArray creeks = drone.getInfo().getExtras().getJSONArray("creeks");
                     String creekID = creeks.getString(0);
-                    CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coordinates(drone.getCoordinate())));
+                    CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coordinates(drone.getPosition())));
         
                     //add creek found to list
                     stage = 3;

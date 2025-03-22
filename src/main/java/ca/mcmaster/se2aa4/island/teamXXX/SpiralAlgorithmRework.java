@@ -28,14 +28,14 @@ public class SpiralAlgorithmRework {
                     if (drone.getSubCounter() == 0){
                         this.action.heading(drone.getDirection().seeLeft()); //left
                         drone.updateDirection(drone.getDirection().seeLeft());
-                        Coordinates coords = drone.getCoordinate();
+                        Coordinates coords = drone.getPosition();
                         coords.turnLeft();
                         drone.updateCoordinates(coords);
                         correctAction = true;
                         break;
                     }
                     else if(drone.getSubCounter() ==1){
-                        if (coords.contains(drone.getCoordinate())){
+                        if (coords.contains(drone.getPosition())){
                             correctAction = true;
                             skip = true;
                             break; 
@@ -78,13 +78,13 @@ public class SpiralAlgorithmRework {
     public boolean forwardCount(int subCounter, int counter, Drone drone){
         while (true){
             if(subCounter < counter*2){
-                Coordinates coord = new Coordinates(drone.getCoordinate());
+                Coordinates coord = new Coordinates(drone.getPosition());
                 if (subCounter % 2 == 0 ){
                     coord.flyForwards();
                     drone.updateCoordinates(coord);
                     this.action.fly();
                     return true;
-                }else if (coords.contains(drone.getCoordinate())) {
+                }else if (coords.contains(drone.getPosition())) {
                     subCounter +=1;
                     drone.setSubCounter(drone.getSubCounter()+1);
                 }

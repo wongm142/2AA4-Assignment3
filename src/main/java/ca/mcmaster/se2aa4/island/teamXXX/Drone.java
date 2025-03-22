@@ -73,10 +73,6 @@ public class Drone {
         return this.subCounter;
     }
 
-    public Coordinates getCoordinate() {
-        return this.currPosition;
-    }
-
     // public void setSpiralParams(ArrayList<String> params){
     //     //0 is the decision
     //     setState(Integer.parseInt(params.get(1)));
