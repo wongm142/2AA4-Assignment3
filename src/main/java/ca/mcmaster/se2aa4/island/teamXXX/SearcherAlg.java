@@ -278,7 +278,7 @@ public class SearcherAlg {
             }
 
             else {
-                performUTurn(turnRightOnUTurn);
+                performUTurn(!turnRightOnUTurn);
                 searcher.setState(new SweepTurn());
             }
 
@@ -323,11 +323,11 @@ public class SearcherAlg {
             logger.info("SWEEP TURN");
             switch(step) {
                 case 1:
-                    performUTurn(turnRightOnUTurn);
+                    moveAndUpdate();
                     step++;
                     break;
                 case 2:
-                    performUTurn(turnRightOnUTurn);
+                    moveAndUpdate();
                     step++;
                     break;
                 case 3:
@@ -335,15 +335,15 @@ public class SearcherAlg {
                     step++;
                     break;
                 case 4:
-                    moveAndUpdate();
+                    performUTurn(turnRightOnSweepTurn);
                     step++;
                     break;
                 case 5:
-                    moveAndUpdate();
+                    performUTurn(turnRightOnSweepTurn);
                     step++;
                     break;
                 case 6:
-                    performUTurn(turnRightOnUTurn);
+                    performUTurn(turnRightOnSweepTurn);
                     step++;
                     break;
                 case 7:
@@ -352,6 +352,7 @@ public class SearcherAlg {
                     turnRightOnUTurn = !turnRightOnUTurn;
                     break;
             }
+            // actions.stop();
             return actions.getDecision();
         }
 

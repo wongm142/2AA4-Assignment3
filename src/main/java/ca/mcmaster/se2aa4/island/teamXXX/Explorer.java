@@ -102,8 +102,12 @@ public class Explorer implements IExplorerRaid {
 
             }else if(stage == 2){
                 logger.info("Stage 2");
-            
-                if (drone.getInfo().noCreek() == 1 || drone.getInfo().noCreek() == 2 || checkPOIs(drone.getCoordinate(), CreeksAndEmergencySitesFound)){
+
+                if (drone.getCounter() != 0 && checkPOIs(drone.getCoordinate(), CreeksAndEmergencySitesFound)) {
+                    stage = 3;
+                }
+
+                else if (drone.getInfo().noCreek() == 1 || drone.getInfo().noCreek() == 2){
                     logger.info("Searching for creek");
                     logger.info("** State: {}", drone.getState());
                     logger.info("** SubCount: {}", drone.getSubCounter());
