@@ -1,8 +1,5 @@
 package ca.mcmaster.se2aa4.island.teamXXX;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import java.util.Objects;
-
 public class Coordinates {
     private int x;
     private int y;
@@ -13,13 +10,9 @@ public class Coordinates {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         Coordinates that = (Coordinates) obj;
-        return x == that.x && y == that.y && direction == that.direction;
+        return x == that.x && y == that.y;
     }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(x, y, direction);
-    }
+    
 
     public Coordinates(int x, int y, Direction direction){
         this.x = x;
@@ -109,6 +102,11 @@ public class Coordinates {
         }
 
         this.direction = direction.seeRight();
+    }
+
+    public static void main(String[] args) {
+     
+
     }
 
 }

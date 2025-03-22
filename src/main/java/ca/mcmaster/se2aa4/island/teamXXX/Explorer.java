@@ -105,8 +105,13 @@ public class Explorer implements IExplorerRaid {
             
                 if (drone.getInfo().noCreek() == 1 || drone.getInfo().noCreek() == 2 || checkPOIs(drone.getCoordinate(), CreeksAndEmergencySitesFound)){
                     logger.info("Searching for creek");
+                    logger.info("** State: {}", drone.getState());
+                    logger.info("** SubCount: {}", drone.getSubCounter());
+                    logger.info("**Counter: {}" ,drone.getCounter());
                     decision = alg.doAlgorithm(drone);
                     logger.info("** Decision: {}", decision.toString());
+                    
+                    // logger.info("**")
 
                     return decision.toString();
 
@@ -158,7 +163,7 @@ public class Explorer implements IExplorerRaid {
         logger.info("Final Battery level {}", finalBattery);
 
         PointOfInterest closestCreek = findClosestCreek();
-
+    
         return closestCreek.getId();
     }
 

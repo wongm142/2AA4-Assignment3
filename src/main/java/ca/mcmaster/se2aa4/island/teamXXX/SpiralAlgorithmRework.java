@@ -19,7 +19,10 @@ public class SpiralAlgorithmRework {
 
     public JSONObject doAlgorithm(Drone drone){
         boolean correctAction = false;
-        while (!correctAction){
+        boolean skip = false;
+        while (!correctAction || skip){
+            correctAction = false;
+            skip = false;
             switch (drone.getState()) {
                 case 0: case 1: case 3:
                     if (drone.getSubCounter() == 0){
@@ -33,8 +36,9 @@ public class SpiralAlgorithmRework {
                     }
                     else if(drone.getSubCounter() ==1){
                         if (coords.contains(drone.getCoordinate())){
-                            correctAction = false;
-                            break;
+                            correctAction = true;
+                            skip = true;
+                            break; 
                         }
                         
                         this.action.scan();
@@ -51,14 +55,12 @@ public class SpiralAlgorithmRework {
                
                 case 4:
                     correctAction = forwardCount(drone.getSubCounter()+2, drone.getCounter(), drone);
-                    if (!correctAction){
-                        drone.setCounter(drone.getCounter()+1);
-                    }
                     break;
             }
             if (!correctAction) {
                 drone.setSubCounter(0);
                 if (drone.getState() == 4) {
+                    drone.setCounter(drone.getCounter()+1);
                     drone.setState(1);
                 }else{
                     drone.setState(drone.getState()+1);
@@ -74,27 +76,25 @@ public class SpiralAlgorithmRework {
 
 
     public boolean forwardCount(int subCounter, int counter, Drone drone){
-        if(subCounter < counter*2){
-            Coordinates coord = drone.getCoordinate();
-            if (subCounter % 2 == 0 ){
-                coord.flyForwards();
-                drone.updateCoordinates(coord);
-                this.action.fly();
-                return true;
-            }else if(this.coords.contains(coord)){
-                coord.flyForwards();
-                drone.updateCoordinates(coord);
-                this.action.fly();
-                drone.setSubCounter(drone.getSubCounter()+1);
-                return true;
+        while (true){
+            if(subCounter < counter*2){
+                Coordinates coord = new Coordinates(drone.getCoordinate());
+                if (subCounter % 2 == 0 ){
+                    coord.flyForwards();
+                    drone.updateCoordinates(coord);
+                    this.action.fly();
+                    return true;
+                }else if (coords.contains(drone.getCoordinate())) {
+                    subCounter +=1;
+                    drone.setSubCounter(drone.getSubCounter()+1);
+                }
+                else{
+                    this.action.scan();
+                    return true;
+                }
+            }else{
+                return false;
             }
-            else{
-                
-                this.action.scan();
-                return true;
-            }
-        }else{
-            return false;
         }
     
     }

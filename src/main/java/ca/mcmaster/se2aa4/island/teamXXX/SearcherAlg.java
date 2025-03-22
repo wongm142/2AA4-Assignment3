@@ -1,10 +1,11 @@
 package ca.mcmaster.se2aa4.island.teamXXX;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import java.util.ArrayList;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import java.util.ArrayList;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class SearcherAlg {
     private final Logger logger = LogManager.getLogger();
@@ -58,12 +59,12 @@ public class SearcherAlg {
 
         if (creeks.length() == 1){
             String creekID = creeks.getString(0);
-            CreeksAndEmergencySitesFound.add(new Creek(creekID, drone.getPosition()));
+            CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coordinates(drone.getPosition())));
         }
 
         if (sites.length() == 1){
             String siteID = sites.getString(0);
-            CreeksAndEmergencySitesFound.add(0, new EmergencySite(siteID, drone.getPosition()));
+            CreeksAndEmergencySitesFound.add(0, new EmergencySite(siteID, new Coordinates(drone.getPosition())));
             logger.info("site found");
             searchingComplete = true;
         }
@@ -145,7 +146,7 @@ public class SearcherAlg {
             JSONObject extras = info.getExtras();
             JSONArray biomes = extras.getJSONArray("biomes");
 
-            ExploredCoords.add(drone.getPosition());
+            ExploredCoords.add(new Coordinates(drone.getPosition()));
             checkPOI(extras);
 
             if (biomes.length() == 1){
