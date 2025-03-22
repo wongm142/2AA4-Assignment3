@@ -115,7 +115,7 @@ public class IslandFinder {
             
             if (finding.equals("GROUND")){
                 moveAndUpdate();
-                finder.setState(new MoveToIsland(extras.getInt("range")));
+                finder.setState(new MoveToIsland(extras.getInt("range") - 1));
             }
 
             else {
@@ -227,7 +227,7 @@ public class IslandFinder {
     private class FindIsland implements IslandFinderStates {
         @Override
         public JSONObject handle(IslandFinder finder){
-            moveAndUpdate();
+            // moveAndUpdate();
             stepsSinceLastEcho++;
 
             // echo after every 1 move 

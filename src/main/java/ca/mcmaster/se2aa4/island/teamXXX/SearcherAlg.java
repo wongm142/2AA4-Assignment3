@@ -57,7 +57,7 @@ public class SearcherAlg {
         JSONArray creeks = extras.getJSONArray("creeks");
         JSONArray sites = extras.getJSONArray("sites");
 
-        if (creeks.length() == 1){
+        if (creeks.length() > 0){
             String creekID = creeks.getString(0);
             CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coordinates(drone.getPosition())));
         }
@@ -76,16 +76,15 @@ public class SearcherAlg {
         if (newDirection.equals(currDirection.seeLeft())) {
             logger.info("Turning left");
             coordinates.turnLeft();
-            drone.updateDirection(currDirection.seeLeft());
         }
         
         else {
             logger.info("Turning Right");
-            drone.updateDirection(currDirection.seeRight());
             coordinates.turnRight();
         }
 
         drone.updateCoordinates(coordinates);
+        drone.updateDirection(newDirection);
     }
 
     private void performUTurn(boolean turnRightOnUTurn) {
@@ -146,8 +145,8 @@ public class SearcherAlg {
             JSONObject extras = info.getExtras();
             JSONArray biomes = extras.getJSONArray("biomes");
 
-            ExploredCoords.add(new Coordinates(drone.getPosition()));
             checkPOI(extras);
+            ExploredCoords.add(new Coordinates(drone.getPosition()));
 
             if (biomes.length() == 1){
                 if (biomes.get(0).equals("OCEAN")) {
@@ -157,7 +156,8 @@ public class SearcherAlg {
                 }
             }
 
-            moveAndUpdate();
+            moveAndUpdate();    
+
             searcher.setState(new InitialTurn());
             // searcher.setState(new InitialState());
             return actions.getDecision();
@@ -271,9 +271,8 @@ public class SearcherAlg {
             String finding = extras.getString("found");
             int range = extras.getInt("range");
 
-            moveAndUpdate();
-
             if (finding.equals("GROUND")) {
+                moveAndUpdate();
                 searcher.setState(new MoveToIsland(range));
             }
 
@@ -350,9 +349,9 @@ public class SearcherAlg {
                     actions.echo(currDirection);
                     searcher.setState(new EchoForward());
                     turnRightOnUTurn = !turnRightOnUTurn;
+                    // actions.stop();
                     break;
             }
-            // actions.stop();
             return actions.getDecision();
         }
 

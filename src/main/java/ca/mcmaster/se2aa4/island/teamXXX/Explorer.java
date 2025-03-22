@@ -21,7 +21,8 @@ public class Explorer implements IExplorerRaid {
     private SearcherAlg searcher = new SearcherAlg();
     private int stage = 0;
     private int flag = 0;
-    
+    private boolean foundCreekUsingSpiral = false;
+
     ArrayList<PointOfInterest> CreeksAndEmergencySitesFound = new ArrayList<>();
     ArrayList<Coordinates> ExploredCoords = new ArrayList<>();
     private SpiralAlgorithmRework alg = new SpiralAlgorithmRework(ExploredCoords);
@@ -86,7 +87,6 @@ public class Explorer implements IExplorerRaid {
                         // decision = actions.getDecision();
                         searcher.setDrone(drone, drone.getInfo(), drone.getPosition(), CreeksAndEmergencySitesFound, ExploredCoords);
                         decision = searcher.search(drone.getDirection());
-
                     } 
                     
                     else {
@@ -104,23 +104,20 @@ public class Explorer implements IExplorerRaid {
             }else if(stage == 2){
                 logger.info("Stage 2");
 
-                if (flag == 2) {
-                    logger.info("Add creek to list IF FLAG");
+                if (flag == 1){
                     JSONObject extras = drone.getInfo().getExtras();
                     JSONArray creeks = extras.getJSONArray("creeks");
                     String creekID = creeks.getString(0);
                     logger.info("creekID {}", creekID);
                     CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coordinates(drone.getPosition())));
                     stage = 3;
+                    foundCreekUsingSpiral = true;
                 }
 
                 if (drone.getCounter() != 0 && checkPOIs(drone.getPosition(), CreeksAndEmergencySitesFound)) {
-                    logger.info("Scanning Creek");
-                    flag = 2;
                     actions.scan();
-                    decision = actions.getDecision();
-                    logger.info("5");
-                    return decision.toString();
+                    flag = 1;
+                    return actions.getDecisionString();
                 }
         
                 if (drone.getInfo().noCreek() == 1 || drone.getInfo().noCreek() == 2){
@@ -141,7 +138,8 @@ public class Explorer implements IExplorerRaid {
                     JSONArray creeks = drone.getInfo().getExtras().getJSONArray("creeks");
                     String creekID = creeks.getString(0);
                     CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coordinates(drone.getPosition())));
-        
+                    foundCreekUsingSpiral = true;
+
                     //add creek found to list
                     stage = 3;
                 }
@@ -164,6 +162,7 @@ public class Explorer implements IExplorerRaid {
 
     @Override
     public void acknowledgeResults(String s) {
+        logger.info("** COORDS X, Y {} {}", drone.getPosition().getX(), drone.getPosition().getY());
         JSONObject response = new JSONObject(new JSONTokener(new StringReader(s)));
         logger.info("** Response received:\n"+response.toString(2));
         Info information = trans.translate(response);
@@ -206,15 +205,24 @@ public class Explorer implements IExplorerRaid {
 
         if (!CreeksAndEmergencySitesFound.isEmpty() && CreeksAndEmergencySitesFound.get(0) instanceof EmergencySite) {
             EmergencySite emergencySite = (EmergencySite) CreeksAndEmergencySitesFound.get(0);
+            logger.info("Emergency Site coords {} {}", emergencySite.getCord().getX(), emergencySite.getCord().getY());
             logger.info("** SITE FOUND ");
             for (PointOfInterest poi : CreeksAndEmergencySitesFound) {
                 if (poi instanceof Creek) {
                     double distance = poi.distanceFrom(emergencySite);
+                    logger.info(poi.getId());
+                    logger.info(distance);
+                    logger.info("POI COORDS {} {}", poi.getCord().getX(), poi.getCord().getY());
+
                     if (distance < minDistance){
                         minDistance = distance;
                         closestCreek = poi;
                     }
                 }
+            }
+
+            if (foundCreekUsingSpiral) {
+                closestCreek = CreeksAndEmergencySitesFound.get(CreeksAndEmergencySitesFound.size() - 1);
             }
         }
 

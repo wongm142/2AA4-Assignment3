@@ -14,9 +14,9 @@ public abstract class PointOfInterest {
     }
 
     public double distanceFrom(PointOfInterest POI) {
-        double dx = this.coord.getX() - POI.coord.getX();
-        double dy = this.coord.getY() - POI.coord.getY();
-        return Math.sqrt(dx * dx + dy * dy);
+        double dx = Math.abs(this.coord.getX() - POI.coord.getX());
+        double dy = Math.abs(this.coord.getY() - POI.coord.getY());
+        return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
     }
 
     public Coordinates getCord(){
