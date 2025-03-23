@@ -1,8 +1,8 @@
 package ca.mcmaster.se2aa4.island.teamXXX;
 
 public abstract class PointOfInterest {
-    private final String id;
-    Coord coord; 
+    private String id;
+    private Coord coord; 
     
     public PointOfInterest(String id, Coord coord){
         this.id = id;

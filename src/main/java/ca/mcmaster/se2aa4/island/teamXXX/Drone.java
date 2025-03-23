@@ -1,16 +1,5 @@
 package ca.mcmaster.se2aa4.island.teamXXX;
 
-import java.io.StringReader;
-import java.util.ArrayList;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import eu.ace_design.island.bot.IExplorerRaid;
-
-import org.json.JSONObject;
-import org.json.JSONTokener;
-
 
 public class Drone {
     //private final Logger logger = LogManager.getLogger();
@@ -48,17 +37,17 @@ public class Drone {
         return batteryLevel.getBattery();
     }
 
-    public void updateDirection(Direction currDirection) {
-        this.currDirection = currDirection;
+    public void updateDirection(Direction direction) {
+        this.currDirection = direction;
     }
 
-    public void updateCoordinates(Coord currPosition) {
-        this.currPosition = currPosition;
+    public void updateCoordinates(Coord position) {
+        this.currPosition = position;
     }
 
-    public void receiveResponse(int cost, Info currInfo) {
+    public void receiveResponse(int cost, Info info) {
         batteryLevel.deductBattery(cost);
-        this.currInfo = currInfo;
+        this.currInfo = info;
     }
     public int getState(){
         return this.state;

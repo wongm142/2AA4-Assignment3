@@ -10,13 +10,17 @@ public class SpiralAlgorithm {
     Action actions;
     //private Drone drone;
 
-    public SpiralAlgorithm(ArrayList<Coord> coords){
+    public SpiralAlgorithm(){
         //this.action = new Actions();
-        this.coords = coords;
+        //this.coords = coords;
         //this.drone = drone;
     }
 
-    public JSONObject doAlgorithm(Drone drone){
+    public void initialize(ArrayList<Coord> coords){
+        this.coords = coords;
+    }
+
+    public JSONObject run(Drone drone){
         boolean correctAction = false;
         boolean skip = false;
         while (!correctAction || skip){

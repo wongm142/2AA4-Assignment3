@@ -128,9 +128,9 @@ public class SearcherAlgorithm {
                 action = new Scan();
                 action.doAction();
                 searcher.setState(new ScanPlace());
+                actions = action;
             }
 
-            actions = action;
             return actions.getDecision();
         }
     }

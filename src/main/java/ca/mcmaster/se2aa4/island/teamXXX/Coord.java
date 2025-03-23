@@ -5,15 +5,6 @@ public class Coord {
     private int y;
     private Direction direction;
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        Coord that = (Coord) obj;
-        return x == that.x && y == that.y;
-    }
-    
-
     public Coord(int x, int y, Direction direction){
         this.x = x;
         this.y = y;
@@ -103,10 +94,12 @@ public class Coord {
 
         this.direction = direction.seeRight();
     }
-
-    public static void main(String[] args) {
-     
-
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Coord that = (Coord) obj;
+        return x == that.x && y == that.y;
     }
 
 }

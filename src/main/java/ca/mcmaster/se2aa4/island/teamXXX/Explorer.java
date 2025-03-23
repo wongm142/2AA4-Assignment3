@@ -19,14 +19,16 @@ public class Explorer implements IExplorerRaid {
     private IslandFinder finder = new IslandFinder();
     private Action actions;
 
-    private SearcherAlgorithm searcher = new SearcherAlgorithm();
     private int stage = 0;
     private int flag = 0;
     private boolean foundCreekUsingSpiral = false;
 
     ArrayList<PointOfInterest> CreeksAndEmergencySitesFound = new ArrayList<>();
     ArrayList<Coord> ExploredCoords = new ArrayList<>();
-    private SpiralAlgorithm alg = new SpiralAlgorithm(ExploredCoords);
+    
+    private SearcherAlgorithm searcher = new SearcherAlgorithm();
+    private SpiralAlgorithm spiral = new SpiralAlgorithm();
+    
 
     @Override
     public void initialize(String s) {
@@ -77,6 +79,7 @@ public class Explorer implements IExplorerRaid {
 
                 if(searcher.isComplete()){
                     logger.info("going to stage 2");
+                    spiral.initialize(ExploredCoords);
                     stage = 2;
                 }
         
@@ -128,7 +131,7 @@ public class Explorer implements IExplorerRaid {
                     logger.info("** State: {}", drone.getState());
                     logger.info("** SubCount: {}", drone.getSubCounter());
                     logger.info("**Counter: {}" ,drone.getCounter());
-                    decision = alg.doAlgorithm(drone);
+                    decision = spiral.run(drone);
                     logger.info("** Decision: {}", decision.toString());
 
                     // logger.info("**")
@@ -193,7 +196,7 @@ public class Explorer implements IExplorerRaid {
         return closestCreek.getId();
     }
 
-    public boolean checkPOIs(Coord coords, ArrayList<PointOfInterest> CreeksAndEmergencySitesFound ){ 
+    private boolean checkPOIs(Coord coords, ArrayList<PointOfInterest> CreeksAndEmergencySitesFound ){ 
         for (PointOfInterest poi : CreeksAndEmergencySitesFound){
             if (coords.equals(poi.getCord())){
                 return true;
@@ -203,7 +206,7 @@ public class Explorer implements IExplorerRaid {
         return false;
     }
 
-    public PointOfInterest findClosestCreek() {
+    private PointOfInterest findClosestCreek() {
         PointOfInterest closestCreek = null;
         
         double minDistance = Integer.MAX_VALUE;
