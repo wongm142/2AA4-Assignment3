@@ -69,7 +69,7 @@ public class Explorer implements IExplorerRaid {
                     // actions.scan();
                     // decision = actions.getDecision();
                     finder.setDrone(drone, drone.getInfo(), drone.getPosition());
-                    decision = finder.locateIsland(drone.getDirection());
+                    decision = finder.run(drone);
                     logger.info("** Decision: {}", decision.toString());
                     return decision.toString();
                 }
@@ -90,12 +90,12 @@ public class Explorer implements IExplorerRaid {
                         // actions.stop(); 
                         // decision = actions.getDecision();
                         searcher.setDrone(drone, drone.getInfo(), drone.getPosition(), CreeksAndEmergencySitesFound, ExploredCoords);
-                        decision = searcher.search(drone.getDirection());
+                        decision = searcher.run(drone);
                     } 
                     
                     else {
                         finder.setDrone(drone, drone.getInfo(), drone.getPosition());
-                        decision = finder.locateIsland(drone.getDirection());
+                        decision = finder.run(drone);
                     }
                 }
 

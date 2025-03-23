@@ -43,8 +43,8 @@ public class SearcherAlgorithm {
         return searchingComplete;
     }
 
-    public JSONObject search(Direction currDirection) {
-        this.currDirection = currDirection;
+    public JSONObject run(Drone drone) {
+        this.currDirection = drone.getDirection();
         return state.handle(this);
     }
 

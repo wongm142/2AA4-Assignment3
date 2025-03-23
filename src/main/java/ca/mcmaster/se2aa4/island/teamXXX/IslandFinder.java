@@ -44,8 +44,8 @@ public class IslandFinder {
         return turnRightOnUTurn;
     }
 
-    public JSONObject locateIsland(Direction currDirection){
-        this.currDirection = currDirection;
+    public JSONObject run(Drone drone){
+        this.currDirection = drone.getDirection();
         return state.handle(this);
     }
 
