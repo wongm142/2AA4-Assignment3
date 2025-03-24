@@ -169,7 +169,7 @@ public class Explorer implements IExplorerRaid {
         JSONObject extraInfo = information.getExtras();
         logger.info("Additional information received: {}", extraInfo);
 
-        drone.receiveResponse(cost, information);
+        drone.receiveResponse(information);
     }
 
     @Override

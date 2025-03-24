@@ -22,6 +22,12 @@ public class Drone {
         currPosition = new Coord(0, 0, currDirection);
     }
 
+    public Drone(Direction direction, int initialBattery){
+        batteryLevel = new Battery(initialBattery);
+        currDirection = direction; 
+        currPosition = new Coord(0, 0, currDirection);
+    }
+
     public ArrayList<PointOfInterest> getCreeksAndEmergencySitesFound(){
         return CreeksAndEmergencySitesFound;
     }
@@ -66,8 +72,8 @@ public class Drone {
         this.currPosition = position;
     }
 
-    public void receiveResponse(int cost, Info info) {
-        batteryLevel.deductBattery(cost);
+    public void receiveResponse(Info info) {
+        batteryLevel.deductBattery(info.getCost());
         this.currInfo = info;
     }
     public int getState(){

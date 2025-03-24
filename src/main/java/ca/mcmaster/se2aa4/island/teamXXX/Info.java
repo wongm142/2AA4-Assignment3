@@ -15,9 +15,9 @@ public class Info {
         this.droneStatus = droneStatus;
     }
 
-    public Direction getDirection(){
-        return direction;
-    }
+    // public Direction getDirection(){
+    //     return direction;
+    // }
 
     public JSONObject getExtras(){
         return extras;
