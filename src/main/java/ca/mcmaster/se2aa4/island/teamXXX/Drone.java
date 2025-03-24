@@ -1,5 +1,6 @@
 package ca.mcmaster.se2aa4.island.teamXXX;
 
+import java.util.ArrayList;
 
 public class Drone {
     //private final Logger logger = LogManager.getLogger();
@@ -11,14 +12,34 @@ public class Drone {
     private Integer state = 0;
     private Integer counter = 0;
     private Integer subCounter = 0;
-    
     private Info currInfo;
-
+    private ArrayList<PointOfInterest> CreeksAndEmergencySitesFound = new ArrayList<>();
+    private ArrayList<Coord> ExploredCoords = new ArrayList<>();
 
     public Drone(String direction, int initialBattery) {
         batteryLevel = new Battery(initialBattery);
         currDirection = Direction.valueOf(direction); 
         currPosition = new Coord(0, 0, currDirection);
+    }
+
+    public ArrayList<PointOfInterest> getCreeksAndEmergencySitesFound(){
+        return CreeksAndEmergencySitesFound;
+    }
+
+    public ArrayList<Coord> getExploredCoords(){
+        return ExploredCoords;
+    }
+
+    public void addCreekToCreeksAndSites(String creekID){
+        CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coord(currPosition)));
+    }
+
+    public void addSiteToCreeksAndSites(String siteID){
+        CreeksAndEmergencySitesFound.add(0, new EmergencySite(siteID, new Coord(currPosition)));
+    }
+
+    public void addToCoords(){
+        ExploredCoords.add(new Coord(currPosition));
     }
 
     public Direction getDirection(){

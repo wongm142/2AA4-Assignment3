@@ -8,7 +8,6 @@ import org.json.JSONObject;
 
 public class IslandFinder {
     private final Logger logger = LogManager.getLogger();
-    private boolean turnRightOnUTurn;
     private boolean findingComplete = false;
     private Direction currDirection;
     private Coord coordinates;
@@ -26,13 +25,7 @@ public class IslandFinder {
         state = new InitialState();
     }
 
-    public void setDrone(Drone drone, Info info, Coord coordinates) {
-        this.drone = drone;
-        this.info = info;
-        this.coordinates = coordinates;
-    }
-
-    public void setState(IslandFinderStates state){
+    private void setState(IslandFinderStates state){
         this.state = state;
     }
 
@@ -40,12 +33,11 @@ public class IslandFinder {
         return findingComplete;
     }
 
-    public boolean shouldTurnRightOnUTurn() {
-        return turnRightOnUTurn;
-    }
-
     public JSONObject run(Drone drone){
+        this.drone = drone;
         this.currDirection = drone.getDirection();
+        this.coordinates = drone.getPosition();
+        this.info = drone.getInfo();
         return state.handle(this);
     }
 
@@ -85,12 +77,12 @@ public class IslandFinder {
 
         if (newDirection.equals(currDirection.seeLeft())) {
             coordinates.turnLeft();
-            turnRightOnUTurn = true;
+            // turnRightOnUTurn = true;
         }
         
         else {
             coordinates.turnRight();
-            turnRightOnUTurn = false;
+            // turnRightOnUTurn = false;
         }
 
         logger.info("UPDATED DIRECTION {}\n", currDirection);

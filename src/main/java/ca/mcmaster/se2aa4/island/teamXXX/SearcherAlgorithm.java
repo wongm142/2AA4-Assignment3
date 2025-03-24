@@ -10,7 +10,7 @@ import org.json.JSONObject;
 public class SearcherAlgorithm {
     private final Logger logger = LogManager.getLogger();
     private IslandFinder finder = new IslandFinder();
-    private boolean turnRightOnUTurn = finder.shouldTurnRightOnUTurn();
+    private boolean turnRightOnUTurn = false;
     private boolean searchingComplete = false;
     private SearcherAlgStates state;
     private Direction currDirection;
@@ -20,22 +20,12 @@ public class SearcherAlgorithm {
     private Action actions;
     private ActionNoParam action;
     private ActionWithParam actionWithParam;
-    private ArrayList<PointOfInterest> CreeksAndEmergencySitesFound;
-    private ArrayList<Coord> ExploredCoords;
 
     public SearcherAlgorithm(){
         state = new InitialState();
     }
-    
-    public void setDrone(Drone drone, Info info, Coord coordinates, ArrayList<PointOfInterest> CreeksAndEmergencySitesFound, ArrayList<Coord> ExploredCoords){
-        this.drone = drone;
-        this.info = info;
-        this.coordinates = coordinates;
-        this.ExploredCoords = ExploredCoords;
-        this.CreeksAndEmergencySitesFound = CreeksAndEmergencySitesFound;
-    }
 
-    public void setState(SearcherAlgStates state){
+    private void setState(SearcherAlgStates state){
         this.state = state;
     }
 
@@ -44,6 +34,9 @@ public class SearcherAlgorithm {
     }
 
     public JSONObject run(Drone drone) {
+        this.drone = drone;
+        this.info = drone.getInfo();
+        this.coordinates = drone.getPosition();
         this.currDirection = drone.getDirection();
         return state.handle(this);
     }
@@ -61,13 +54,14 @@ public class SearcherAlgorithm {
         JSONArray sites = extras.getJSONArray("sites");
 
         if (creeks.length() > 0){
+            logger.info("ADDIGN CREEK TO ARRAYLIST");
             String creekID = creeks.getString(0);
-            CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coord(drone.getPosition())));
+            drone.addCreekToCreeksAndSites(creekID);
         }
 
         if (sites.length() == 1){
             String siteID = sites.getString(0);
-            CreeksAndEmergencySitesFound.add(0, new EmergencySite(siteID, new Coord(drone.getPosition())));
+            drone.addSiteToCreeksAndSites(siteID);
             logger.info("site found");
             searchingComplete = true;
         }
@@ -152,7 +146,7 @@ public class SearcherAlgorithm {
             JSONArray biomes = extras.getJSONArray("biomes");
 
             checkPOI(extras);
-            ExploredCoords.add(new Coord(drone.getPosition()));
+            drone.addToCoords();
 
             if (biomes.length() == 1){
                 if (biomes.get(0).equals("OCEAN")) {

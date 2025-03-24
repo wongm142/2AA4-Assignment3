@@ -20,11 +20,7 @@ public class Explorer implements IExplorerRaid {
     private Action actions;
 
     private int stage = 0;
-    private int flag = 0;
     private boolean foundCreekUsingSpiral = false;
-
-    ArrayList<PointOfInterest> CreeksAndEmergencySitesFound = new ArrayList<>();
-    ArrayList<Coord> ExploredCoords = new ArrayList<>();
     
     private SearcherAlgorithm searcher = new SearcherAlgorithm();
     private SpiralAlgorithm spiral = new SpiralAlgorithm();
@@ -68,7 +64,6 @@ public class Explorer implements IExplorerRaid {
                 } else {
                     // actions.scan();
                     // decision = actions.getDecision();
-                    finder.setDrone(drone, drone.getInfo(), drone.getPosition());
                     decision = finder.run(drone);
                     logger.info("** Decision: {}", decision.toString());
                     return decision.toString();
@@ -79,7 +74,7 @@ public class Explorer implements IExplorerRaid {
 
                 if(searcher.isComplete()){
                     logger.info("going to stage 2");
-                    spiral.initialize(ExploredCoords);
+                    spiral.initialize(drone.getExploredCoords());
                     stage = 2;
                 }
         
@@ -89,12 +84,10 @@ public class Explorer implements IExplorerRaid {
                         logger.info("** CURRENT HEADING {}", drone.getDirection());
                         // actions.stop(); 
                         // decision = actions.getDecision();
-                        searcher.setDrone(drone, drone.getInfo(), drone.getPosition(), CreeksAndEmergencySitesFound, ExploredCoords);
                         decision = searcher.run(drone);
                     } 
                     
                     else {
-                        finder.setDrone(drone, drone.getInfo(), drone.getPosition());
                         decision = finder.run(drone);
                     }
                 }
@@ -107,24 +100,6 @@ public class Explorer implements IExplorerRaid {
 
             }else if(stage == 2){
                 logger.info("Stage 2");
-
-                if (flag == 1){
-                    JSONObject extras = drone.getInfo().getExtras();
-                    JSONArray creeks = extras.getJSONArray("creeks");
-                    String creekID = creeks.getString(0);
-                    logger.info("creekID {}", creekID);
-                    CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coord(drone.getPosition())));
-                    stage = 3;
-                    foundCreekUsingSpiral = true;
-                }
-
-                if (drone.getCounter() != 0 && checkPOIs(drone.getPosition(), CreeksAndEmergencySitesFound)) {
-                    ActionNoParam action = new Scan();
-                    action.doAction();
-                    this.actions = action;
-                    flag = 1;
-                    return actions.getDecisionString();
-                }
         
                 if (drone.getInfo().noCreek() == 1 || drone.getInfo().noCreek() == 2){
                     logger.info("Searching for creek");
@@ -143,7 +118,7 @@ public class Explorer implements IExplorerRaid {
                     logger.info("Add creek to list ELSE");
                     JSONArray creeks = drone.getInfo().getExtras().getJSONArray("creeks");
                     String creekID = creeks.getString(0);
-                    CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coord(drone.getPosition())));
+                    drone.addCreekToCreeksAndSites(creekID);
                     foundCreekUsingSpiral = true;
 
                     //add creek found to list
@@ -196,7 +171,7 @@ public class Explorer implements IExplorerRaid {
         return closestCreek.getId();
     }
 
-    private boolean checkPOIs(Coord coords, ArrayList<PointOfInterest> CreeksAndEmergencySitesFound ){ 
+    private boolean checkPOIs(Coord coords, ArrayList<PointOfInterest> CreeksAndEmergencySitesFound){ 
         for (PointOfInterest poi : CreeksAndEmergencySitesFound){
             if (coords.equals(poi.getCord())){
                 return true;
@@ -208,7 +183,7 @@ public class Explorer implements IExplorerRaid {
 
     private PointOfInterest findClosestCreek() {
         PointOfInterest closestCreek = null;
-        
+        ArrayList <PointOfInterest> CreeksAndEmergencySitesFound = drone.getCreeksAndEmergencySitesFound();
         double minDistance = Integer.MAX_VALUE;
 
         if (!CreeksAndEmergencySitesFound.isEmpty() && CreeksAndEmergencySitesFound.get(0) instanceof EmergencySite) {
