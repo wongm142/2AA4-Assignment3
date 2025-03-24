@@ -4,9 +4,10 @@ import java.util.ArrayList;
 
 import org.json.JSONObject;
 
-public class SpiralAlgorithm {
+public class SpiralAlgorithm extends Algorithm{
 
-    private ArrayList<Coord> coords;
+    private boolean complete = false;
+    //private ArrayList<Coord> coords;
     Action actions;
     //private Drone drone;
 
@@ -16,14 +17,18 @@ public class SpiralAlgorithm {
         //this.drone = drone;
     }
 
-    public void initialize(ArrayList<Coord> coords){
-        this.coords = coords;
-    }
-
+    // private void initialize(ArrayList<Coord> coords){
+    //     this.coords = coords;
+    // }
+    @Override
     public JSONObject run(Drone drone){
         boolean correctAction = false;
         boolean skip = false;
         while (!correctAction || skip){
+
+            if (drone.getInfo().noCreek() ==0){
+                complete = true;
+            }
             correctAction = false;
             skip = false;
             switch (drone.getState()) {
@@ -41,7 +46,7 @@ public class SpiralAlgorithm {
                         break;
                     }
                     else if(drone.getSubCounter() ==1){
-                        if (coords.contains(drone.getPosition())){
+                        if (drone.getExploredCoords().contains(drone.getPosition())){ //name of list of cords
                             correctAction = true;
                             skip = true;
                             break; 
@@ -80,10 +85,14 @@ public class SpiralAlgorithm {
         }
         return actions.getDecision();
     }
+    @Override
+    public boolean isComplete(){
+        return this.complete;
+    }
 
 
 
-    public boolean forwardCount(int subCounter, int counter, Drone drone){
+    private boolean forwardCount(int subCounter, int counter, Drone drone){
         while (true){
             if(subCounter < counter*2){
                 Coord coord = new Coord(drone.getPosition());
@@ -95,7 +104,7 @@ public class SpiralAlgorithm {
                     this.actions = action;
                     // this.action.fly();
                     return true;
-                }else if (coords.contains(drone.getPosition())) {
+                }else if (drone.getExploredCoords().contains(drone.getPosition())) { //name of list of coords
                     subCounter +=1;
                     drone.setSubCounter(drone.getSubCounter()+1);
                 }

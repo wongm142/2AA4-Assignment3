@@ -16,14 +16,14 @@ public class Explorer implements IExplorerRaid {
     private final Logger logger = LogManager.getLogger();
     private Drone drone;
     private Translator trans = new Translator();
-    private IslandFinder finder = new IslandFinder();
+    private Algorithm finder = new IslandFinder();
     private Action actions;
 
     private int stage = 0;
     private boolean foundCreekUsingSpiral = false;
     
-    private SearcherAlgorithm searcher = new SearcherAlgorithm();
-    private SpiralAlgorithm spiral = new SpiralAlgorithm();
+    private Algorithm searcher = new SearcherAlgorithm();
+    private Algorithm spiral = new SpiralAlgorithm();
     
 
     @Override
@@ -71,10 +71,10 @@ public class Explorer implements IExplorerRaid {
                 
             }else if(stage == 1){
                 logger.info("Stage 1");
-
+                // checkPOIs(drone.getPosition(), drone.getCreeksAndEmergencySitesFound()
                 if(searcher.isComplete()){
                     logger.info("going to stage 2");
-                    spiral.initialize(drone.getExploredCoords());
+                    // spiral.initialize(drone.getExploredCoords());
                     stage = 2;
                 }
         
@@ -101,29 +101,41 @@ public class Explorer implements IExplorerRaid {
             }else if(stage == 2){
                 logger.info("Stage 2");
         
-                if (drone.getInfo().noCreek() == 1 || drone.getInfo().noCreek() == 2){
-                    logger.info("Searching for creek");
-                    logger.info("** State: {}", drone.getState());
-                    logger.info("** SubCount: {}", drone.getSubCounter());
-                    logger.info("**Counter: {}" ,drone.getCounter());
-                    decision = spiral.run(drone);
-                    logger.info("** Decision: {}", decision.toString());
-
-                    // logger.info("**")
-
-                    return decision.toString();
-                } 
-                
-                else{
-                    logger.info("Add creek to list ELSE");
+                logger.info("Searching for creek");
+                logger.info("** State: {}", drone.getState());
+                logger.info("** SubCount: {}", drone.getSubCounter());
+                logger.info("**Counter: {}" ,drone.getCounter());
+                decision = spiral.run(drone);
+                logger.info("** Decision: {}", decision.toString());
+                if (spiral.isComplete() || checkPOIs(drone.getPosition(), drone.getCreeksAndEmergencySitesFound())){
+                    logger.info("is complete");
                     JSONArray creeks = drone.getInfo().getExtras().getJSONArray("creeks");
+                    logger.info("1");
                     String creekID = creeks.getString(0);
+                    logger.info("2");
                     drone.addCreekToCreeksAndSites(creekID);
+                    logger.info("3");
                     foundCreekUsingSpiral = true;
-
-                    //add creek found to list
-                    stage = 3;
+                    stage =3;
                 }
+                // logger.info("**")
+
+                return decision.toString();
+                
+                
+                // else{
+                //     logger.info("Add creek to list ELSE");
+                //     JSONArray creeks = drone.getInfo().getExtras().getJSONArray("creeks");
+                //     logger.info("1");
+                //     String creekID = creeks.getString(0);
+                //     logger.info("2");
+                //     drone.addCreekToCreeksAndSites(creekID);
+                //     logger.info("3");
+                //     foundCreekUsingSpiral = true;
+
+                //     //add creek found to list
+                //     stage = 3;
+                // }
                 
             }
 

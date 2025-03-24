@@ -6,7 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
-public class IslandFinder {
+public class IslandFinder extends Algorithm {
     private final Logger logger = LogManager.getLogger();
     private boolean findingComplete = false;
     private Direction currDirection;
@@ -28,11 +28,11 @@ public class IslandFinder {
     private void setState(IslandFinderStates state){
         this.state = state;
     }
-
+    @Override
     public boolean isComplete(){
         return findingComplete;
     }
-
+    @Override
     public JSONObject run(Drone drone){
         this.drone = drone;
         this.currDirection = drone.getDirection();

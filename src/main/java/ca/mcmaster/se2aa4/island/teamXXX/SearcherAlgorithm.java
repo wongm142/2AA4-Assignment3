@@ -7,7 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class SearcherAlgorithm {
+public class SearcherAlgorithm extends Algorithm{
     private final Logger logger = LogManager.getLogger();
     private IslandFinder finder = new IslandFinder();
     private boolean turnRightOnUTurn = false;
@@ -28,11 +28,11 @@ public class SearcherAlgorithm {
     private void setState(SearcherAlgStates state){
         this.state = state;
     }
-
+    @Override
     public boolean isComplete() {
         return searchingComplete;
     }
-
+    @Override
     public JSONObject run(Drone drone) {
         this.drone = drone;
         this.info = drone.getInfo();
