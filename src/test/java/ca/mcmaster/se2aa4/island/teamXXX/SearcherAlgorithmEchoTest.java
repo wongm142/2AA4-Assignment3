@@ -11,11 +11,10 @@ public class SearcherAlgorithmEchoTest {
     public void testEcho() {
         SearcherAlgorithm searcher = new SearcherAlgorithm();
         Drone drone = new Drone(Direction.E, 100);
-
-        searcher.run(drone);
-        searcher.run(drone);
-
         JSONObject extras = new JSONObject();
+
+        searcher.run(drone);
+
         extras.put("biomes", new JSONArray().put("OCEAN"));
         drone.receiveResponse(new Info(2, extras, "OK"));
 

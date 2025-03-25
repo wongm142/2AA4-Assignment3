@@ -12,10 +12,9 @@ public class SearcherAlgorithmUTurnTest {
         SearcherAlgorithm searcher = new SearcherAlgorithm();
         Drone drone = new Drone(Direction.E, 100);
 
-        searcher.run(drone);
+        JSONObject extras = new JSONObject();
         searcher.run(drone);
 
-        JSONObject extras = new JSONObject();
         extras.put("biomes", new JSONArray().put("OCEAN"));
         drone.receiveResponse(new Info(2, extras, "OK"));
 
@@ -25,8 +24,6 @@ public class SearcherAlgorithmUTurnTest {
         extras.put("found", "OUT_OF_RANGE");
         extras.put("range", 10);
         drone.receiveResponse(new Info(10, extras, "OK"));
-
-        searcher.run(drone);
 
         JSONObject decision = searcher.run(drone);
 
