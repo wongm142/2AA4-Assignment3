@@ -19,6 +19,8 @@ public class TranslatorTest {
 
         response.put("extras", extras);
         response.put("status", "OK");
+
+        Translator translator = new Translator();
         
         Info result = translator.translate(response);
 
