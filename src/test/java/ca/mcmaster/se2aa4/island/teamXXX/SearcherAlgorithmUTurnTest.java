@@ -17,8 +17,9 @@ public class SearcherAlgorithmUTurnTest {
 
         extras.put("biomes", new JSONArray().put("OCEAN"));
         extras.put("creeks", new JSONArray());
-        
+
         drone.receiveResponse(new Info(2, extras, "OK"));
+        extras.put("sites", new JSONArray());
 
         searcher.run(drone);
 

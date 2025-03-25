@@ -19,6 +19,7 @@ public class SearcherAlgorithmEchoTest {
         extras.put("creeks", new JSONArray());
 
         drone.receiveResponse(new Info(2, extras, "OK"));
+        extras.put("sites", new JSONArray());
 
         JSONObject decision = searcher.run(drone);
 

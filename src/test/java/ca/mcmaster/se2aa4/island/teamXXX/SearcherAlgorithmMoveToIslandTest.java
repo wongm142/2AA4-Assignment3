@@ -18,6 +18,7 @@ public class SearcherAlgorithmMoveToIslandTest {
         extras.put("creeks", new JSONArray());
 
         drone.receiveResponse(new Info(2, extras, "OK"));
+        extras.put("sites", new JSONArray());
 
         searcher.run(drone);
 
