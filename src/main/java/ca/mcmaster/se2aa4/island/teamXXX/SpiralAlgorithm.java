@@ -24,10 +24,14 @@ public class SpiralAlgorithm extends Algorithm{
     public JSONObject run(Drone drone){
         boolean correctAction = false;
         boolean skip = false;
+
         while (!correctAction || skip){
 
             if (drone.getInfo().noCreek() == 0){
                 complete = true;
+                ActionNoParam action = new Scan();
+                action.doAction();
+                return action.getDecision();
             }
             correctAction = false;
             skip = false;

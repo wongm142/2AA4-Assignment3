@@ -17,7 +17,7 @@ public class Explorer implements IExplorerRaid {
     private Drone drone;
     private Translator trans = new Translator();
     private Algorithm finder = new IslandFinder();
-
+    private boolean flag = false;
     private int stage = 0;
     private boolean foundCreekUsingSpiral = false;
     
@@ -50,7 +50,7 @@ public class Explorer implements IExplorerRaid {
                 stage = 3;
             }
 
-            logger.info("re run");
+            // logger.info("re run");
             JSONObject decision = new JSONObject();
             foundMove = false;
 
@@ -69,18 +69,18 @@ public class Explorer implements IExplorerRaid {
                 }
                 
             }else if(stage == 1){
-                logger.info("Stage 1");
+                // logger.info("Stage 1");
                 // checkPOIs(drone.getPosition(), drone.getCreeksAndEmergencySitesFound()
                 if(searcher.isComplete()){
-                    logger.info("going to stage 2");
+                    // logger.info("going to stage 2");
                     // spiral.initialize(drone.getExploredCoords());
                     stage = 2;
                 }
         
                 else {
                     if (finder.isComplete()) {
-                        logger.info("** SEARCHING ISLAND");
-                        logger.info("** CURRENT HEADING {}", drone.getDirection());
+                        // logger.info("** SEARCHING ISLAND");
+                        // logger.info("** CURRENT HEADING {}", drone.getDirection());
                         // actions.stop(); 
                         // decision = actions.getDecision();
                         decision = searcher.run(drone);
@@ -98,28 +98,75 @@ public class Explorer implements IExplorerRaid {
               
 
             }else if(stage == 2){
-                logger.info("Stage 2");
-        
-                logger.info("Searching for creek");
-                logger.info("** State: {}", drone.getState());
-                logger.info("** SubCount: {}", drone.getSubCounter());
-                logger.info("**Counter: {}" ,drone.getCounter());
-                decision = spiral.run(drone);
-                logger.info("** Decision: {}", decision.toString());
-                if (spiral.isComplete() || checkPOIs(drone.getPosition(), drone.getCreeksAndEmergencySitesFound())){
-                    logger.info("is complete");
-                    JSONArray creeks = drone.getInfo().getExtras().getJSONArray("creeks");
-                    logger.info("1");
+                // logger.info("Stage 2");
+
+                if (flag){
+                    JSONObject extras = drone.getInfo().getExtras();
+                    JSONArray creeks = extras.getJSONArray("creeks");
                     String creekID = creeks.getString(0);
-                    logger.info("2");
+                    // logger.info("creekID {}", creekID);
                     drone.addCreekToCreeksAndSites(creekID);
-                    logger.info("3");
+                    stage = 3;
                     foundCreekUsingSpiral = true;
+                }
+
+                if (drone.getCounter() != 0 && checkPOIs(drone.getPosition(), drone.getCreeksAndEmergencySitesFound())) {
+                    ActionNoParam action = new Scan();
+                    action.doAction();
+                    flag = true;
+                    return action.getDecisionString();
+                }
+        
+                if (!spiral.isComplete()){
+                    // logger.info("Searching for creek");
+                    // logger.info("** State: {}", drone.getState());
+                    // logger.info("** SubCount: {}", drone.getSubCounter());
+                    // logger.info("**Counter: {}" ,drone.getCounter());
+                    decision = spiral.run(drone);
+                    // logger.info("** Decision: {}", decision.toString());
+
+                    // logger.info("**")
+
+                    return decision.toString();
+                } 
+                
+                else{
+                    // logger.info("Add creek to list ELSE");
+                    JSONArray creeks = drone.getInfo().getExtras().getJSONArray("creeks");
+                    String creekID = creeks.getString(0);
+                    drone.addCreekToCreeksAndSites(creekID);
+                    foundCreekUsingSpiral = true;
+
+                    //add creek found to list
                     stage = 3;
                 }
+
+                // decision = spiral.run(drone);
+                // logger.info("** Decision: {}", decision.toString());
+
+                // if (spiral.isComplete()){
+                //     logger.info("is complete");
+                //     JSONArray creeks = drone.getInfo().getExtras().getJSONArray("creeks");
+                //     logger.info("1");
+                //     String creekID = creeks.getString(0);
+                //     logger.info("2");
+                //     drone.addCreekToCreeksAndSites(creekID);
+                //     logger.info("3");
+                //     foundCreekUsingSpiral = true;
+                //     stage = 3;
+                // }
+
+                // else if (checkPOIs(drone.getPosition(), drone.getCreeksAndEmergencySitesFound())){
+                //     stage = 4;
+                //     ActionNoParam action = new Scan();
+                //     action.doAction();
+                //     decision = action.getDecision();
+                //     return decision.toString();
+                // }
+
                 // logger.info("**")
 
-                return decision.toString();
+                // return decision.toString();
                 
                 
                 // else{
@@ -139,7 +186,7 @@ public class Explorer implements IExplorerRaid {
             }
 
             else{ //stage 3
-                logger.info("Stage 3");
+                // logger.info("Stage 3");
                 decision = new JSONObject();
                 ActionNoParam action = new Stop();
                 action.doAction();
@@ -147,6 +194,23 @@ public class Explorer implements IExplorerRaid {
                 logger.info("** Decision: {}",decision);
                 return decision.toString();
             }
+
+            // else {
+            //     logger.info("stage 4");
+            //     try {
+            //         JSONArray creeks = drone.getInfo().getExtras().getJSONArray("creeks");
+            //         logger.info("1");
+            //         String creekID = creeks.getString(0);
+            //         logger.info("2");
+            //         drone.addCreekToCreeksAndSites(creekID);
+            //         logger.info("3");
+            //         stage = 3;
+            //     }
+
+            //     catch(Exception e) {
+            //         stage = 3;
+            //     }
+            // }
 
         }
         logger.info("should never be here");
@@ -156,7 +220,7 @@ public class Explorer implements IExplorerRaid {
 
     @Override
     public void acknowledgeResults(String s) {
-        logger.info("** COORDS X, Y {} {}", drone.getPosition().getX(), drone.getPosition().getY());
+        // logger.info("** COORDS X, Y {} {}", drone.getPosition().getX(), drone.getPosition().getY());
         JSONObject response = new JSONObject(new JSONTokener(new StringReader(s)));
         logger.info("** Response received:\n"+response.toString(2));
         Info information = trans.translate(response);
@@ -199,14 +263,14 @@ public class Explorer implements IExplorerRaid {
 
         if (!CreeksAndEmergencySitesFound.isEmpty() && CreeksAndEmergencySitesFound.get(0) instanceof EmergencySite) {
             EmergencySite emergencySite = (EmergencySite) CreeksAndEmergencySitesFound.get(0);
-            logger.info("Emergency Site coords {} {}", emergencySite.getCord().getX(), emergencySite.getCord().getY());
-            logger.info("** SITE FOUND ");
+            // logger.info("Emergency Site coords {} {}", emergencySite.getCord().getX(), emergencySite.getCord().getY());
+            // logger.info("** SITE FOUND ");
             for (PointOfInterest poi : CreeksAndEmergencySitesFound) {
                 if (poi instanceof Creek) {
                     double distance = poi.distanceFrom(emergencySite);
-                    logger.info(poi.getId());
-                    logger.info(distance);
-                    logger.info("POI COORDS {} {}", poi.getCord().getX(), poi.getCord().getY());
+                    // logger.info(poi.getId());
+                    // logger.info(distance);
+                    // logger.info("POI COORDS {} {}", poi.getCord().getX(), poi.getCord().getY());
 
                     if (distance < minDistance){
                         minDistance = distance;

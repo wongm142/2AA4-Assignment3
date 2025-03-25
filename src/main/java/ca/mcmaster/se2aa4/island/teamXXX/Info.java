@@ -30,7 +30,7 @@ public class Info {
       
         try{
             JSONArray creeks = extras.getJSONArray("creeks");
-            if (creeks.length() == 1){
+            if (creeks.length() >= 1){
                 // String creekID = creeks.getString(0);
                 // DiscoveredPOIs.CreeksAndEmergencySitesFound.add(new Creek(creekID, new Coordinates(coordinates.getX(), coordinates.getY(), currDirection)));
                 return 0;
