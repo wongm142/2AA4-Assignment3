@@ -17,6 +17,7 @@ public class Explorer implements IExplorerRaid {
     private Drone drone;
     private Translator trans = new Translator();
     private Algorithm finder = new IslandFinder();
+
     private int stage = 0;
     private boolean foundCreekUsingSpiral = false;
     
@@ -114,7 +115,7 @@ public class Explorer implements IExplorerRaid {
                     drone.addCreekToCreeksAndSites(creekID);
                     logger.info("3");
                     foundCreekUsingSpiral = true;
-                    stage =3;
+                    stage = 3;
                 }
                 // logger.info("**")
 

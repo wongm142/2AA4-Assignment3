@@ -26,7 +26,7 @@ public class SpiralAlgorithm extends Algorithm{
         boolean skip = false;
         while (!correctAction || skip){
 
-            if (drone.getInfo().noCreek() ==0){
+            if (drone.getInfo().noCreek() == 0){
                 complete = true;
             }
             correctAction = false;
