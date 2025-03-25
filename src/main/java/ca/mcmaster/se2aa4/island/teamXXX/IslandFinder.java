@@ -18,7 +18,6 @@ public class IslandFinder extends Algorithm {
     private ActionWithParam actionWithParam;
     private IslandFinderStates state;
     private ArrayList<DirectionRangePair> directions = new ArrayList<>();
-    private int echoCount = 0;
     private int stepsSinceLastEcho = 0;
 
     public IslandFinder() {

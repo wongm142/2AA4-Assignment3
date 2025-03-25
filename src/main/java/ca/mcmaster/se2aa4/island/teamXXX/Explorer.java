@@ -17,8 +17,6 @@ public class Explorer implements IExplorerRaid {
     private Drone drone;
     private Translator trans = new Translator();
     private Algorithm finder = new IslandFinder();
-    private Action actions;
-
     private int stage = 0;
     private boolean foundCreekUsingSpiral = false;
     

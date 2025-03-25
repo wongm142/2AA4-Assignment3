@@ -9,7 +9,6 @@ import org.json.JSONObject;
 
 public class SearcherAlgorithm extends Algorithm{
     private final Logger logger = LogManager.getLogger();
-    private IslandFinder finder = new IslandFinder();
     private boolean turnRightOnUTurn = false;
     private boolean searchingComplete = false;
     private SearcherAlgStates state;
