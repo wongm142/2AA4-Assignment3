@@ -2,14 +2,15 @@ package ca.mcmaster.se2aa4.island.teamXXX;
 
 import java.util.ArrayList;
 
+import javax.swing.Action;
+
 import org.json.JSONObject;
 
 public class SpiralAlgorithm extends Algorithm{
 
     private boolean complete = false;
-    //private ArrayList<Coord> coords;
-    Action actions;
-    //private Drone drone;
+    private ActionCommand actions;
+    private ActionInvoker invoker = new ActionInvoker();
 
     public SpiralAlgorithm(){
         //this.action = new Actions();
@@ -17,9 +18,6 @@ public class SpiralAlgorithm extends Algorithm{
         //this.drone = drone;
     }
 
-    // private void initialize(ArrayList<Coord> coords){
-    //     this.coords = coords;
-    // }
     @Override
     public JSONObject run(Drone drone){
         boolean correctAction = false;
@@ -29,19 +27,26 @@ public class SpiralAlgorithm extends Algorithm{
 
             if (drone.getInfo().noCreek() == 0){
                 complete = true;
-                ActionNoParam action = new Scan();
-                action.doAction();
-                return action.getDecision();
+
+                Scan scanCommand = new Scan();
+                invoker.setCommand(scanCommand);
+                invoker.executeCommand();
+                actions = scanCommand;
+
+                return actions.getDecision();
             }
+
             correctAction = false;
             skip = false;
+
             switch (drone.getState()) {
                 case 0: case 1: case 3:
                     if (drone.getSubCounter() == 0){
-                        ActionWithParam action = new Heading();
-                        action.doAction(drone.getDirection().seeLeft());
-                        this.actions = action;
-                        // this.action.heading(drone.getDirection().seeLeft()); //left
+                        Heading headingCommand = new Heading();
+                        invoker.setCommand(headingCommand);
+                        invoker.executeCommand(drone.getDirection().seeLeft());
+                        actions = headingCommand;
+
                         drone.updateDirection(drone.getDirection().seeLeft());
                         Coord coords = drone.getPosition();
                         coords.turnLeft();
@@ -49,16 +54,19 @@ public class SpiralAlgorithm extends Algorithm{
                         correctAction = true;
                         break;
                     }
-                    else if(drone.getSubCounter() ==1){
+
+                    else if(drone.getSubCounter() ==1) {
                         if (drone.getExploredCoords().contains(drone.getPosition())){ //name of list of cords
                             correctAction = true;
                             skip = true;
                             break; 
                         }
-                        ActionNoParam action = new Scan();
-                        action.doAction();
-                        this.actions = action;
-                        // this.action.scan();
+
+                        Scan scanCommand = new Scan();
+                        invoker.setCommand(scanCommand);
+                        invoker.executeCommand();
+                        actions = scanCommand;
+
                         correctAction = true;
                         break;
                     }else{
@@ -74,6 +82,7 @@ public class SpiralAlgorithm extends Algorithm{
                     correctAction = forwardCount(drone.getSubCounter()+2, drone.getCounter(), drone);
                     break;
             }
+
             if (!correctAction) {
                 drone.setSubCounter(0);
                 if (drone.getState() == 4) {
@@ -83,56 +92,53 @@ public class SpiralAlgorithm extends Algorithm{
                     drone.setState(drone.getState()+1);
                 }
             }
+
             else{
                 drone.setSubCounter(drone.getSubCounter()+1);
             }
         }
         return actions.getDecision();
     }
+
     @Override
     public boolean isComplete(){
         return this.complete;
     }
 
-
-
     private boolean forwardCount(int subCounter, int counter, Drone drone){
         while (true){
             if(subCounter < counter*2){
                 Coord coord = new Coord(drone.getPosition());
+
                 if (subCounter % 2 == 0 ){
                     coord.flyForwards();
                     drone.updateCoordinates(coord);
-                    ActionNoParam action = new Fly();
-                    action.doAction();
-                    this.actions = action;
-                    // this.action.fly();
+
+                    Fly flyCommand = new Fly();
+                    invoker.setCommand(flyCommand);
+                    invoker.executeCommand();
+                    actions = flyCommand;
+
                     return true;
-                }else if (drone.getExploredCoords().contains(drone.getPosition())) { //name of list of coords
+                }
+                
+                else if (drone.getExploredCoords().contains(drone.getPosition())) { //name of list of coords
                     subCounter +=1;
                     drone.setSubCounter(drone.getSubCounter()+1);
                 }
+
                 else{
-                    ActionNoParam action = new Scan();
-                    action.doAction();
-                    this.actions = action;
-                    // this.action.scan();
+                    Scan scanCommand = new Scan();
+                    invoker.setCommand(scanCommand);
+                    invoker.executeCommand();
+                    actions = scanCommand;
                     return true;
                 }
-            }else{
+            }
+            
+            else{
                 return false;
             }
         }
-    
     }
-
-    // private ArrayList<String> populateResponse(int state, int subCounter, int counter, Direction direction){ 
-    //     ArrayList<String> response = new ArrayList<>();
-    //     response.add(action.getDecisionString());
-    //     response.add(Integer.toString(state));
-    //     response.add(Integer.toString(subCounter));
-    //     response.add(Integer.toString(counter));
-    //     response.add(direction.currentDirection.toString());
-    //     return response;
-    // }
 }

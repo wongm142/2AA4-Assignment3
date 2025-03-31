@@ -13,13 +13,12 @@ public class IslandFinder extends Algorithm {
     private Coord coordinates;
     private Drone drone;
     private Info info;
-    private Action actions;
-    private ActionNoParam action;
-    private ActionWithParam actionWithParam;
     private IslandFinderStates state;
     private ArrayList<DirectionRangePair> directions = new ArrayList<>();
     private int stepsSinceLastEcho = 0;
-
+    private ActionCommand actions;
+    private ActionInvoker invoker = new ActionInvoker();
+    
     public IslandFinder() {
         state = new InitialState();
     }
@@ -62,26 +61,26 @@ public class IslandFinder extends Algorithm {
     }
 
     private void moveAndUpdate(){
-        action = new Fly();
-        action.doAction();
-        actions = action;
+        Fly flyCommand = new Fly();
+        invoker.setCommand(flyCommand);
+        invoker.executeCommand();
+        actions = flyCommand;
         coordinates.flyForwards();
         drone.updateCoordinates(coordinates);
     }
     
     private void turnAndUpdate(Direction newDirection) {
-        actionWithParam = new Heading();
-        actionWithParam.doAction(newDirection);
-        actions = actionWithParam;
+        Heading headingCommand = new Heading();
+        invoker.setCommand(headingCommand);
+        invoker.executeCommand(newDirection);
+        actions = headingCommand;
 
         if (newDirection.equals(currDirection.seeLeft())) {
             coordinates.turnLeft();
-            // turnRightOnUTurn = true;
         }
         
         else {
             coordinates.turnRight();
-            // turnRightOnUTurn = false;
         }
 
         logger.info("UPDATED DIRECTION {}\n", currDirection);
@@ -93,12 +92,12 @@ public class IslandFinder extends Algorithm {
     private class InitialState implements IslandFinderStates {
         @Override
         public JSONObject handle(IslandFinder finder){
-            actionWithParam = new Echo();
-            actionWithParam.doAction(currDirection);
-            actions = actionWithParam;
+            Echo echoCommand = new Echo();
+            invoker.setCommand(echoCommand);
+            invoker.executeCommand(currDirection);
+            actions = echoCommand;
             finder.setState(new InitialEcho());
 
-            // actions.scan();
             return actions.getDecision();
         }
     }
@@ -117,9 +116,10 @@ public class IslandFinder extends Algorithm {
             }
 
             else {
-                actionWithParam = new Echo();
-                actionWithParam.doAction(currDirection.seeRight());
-                actions = actionWithParam;
+                Echo echoCommand = new Echo();
+                invoker.setCommand(echoCommand);
+                invoker.executeCommand(currDirection.seeRight());
+                actions = echoCommand;
                 finder.setState(new InitialEchoRight());
             }
 
@@ -141,9 +141,10 @@ public class IslandFinder extends Algorithm {
             }
 
             else {
-                actionWithParam = new Echo();
-                actionWithParam.doAction(currDirection.seeLeft());
-                actions = actionWithParam;
+                Echo echoCommand = new Echo();
+                invoker.setCommand(echoCommand);
+                invoker.executeCommand(currDirection.seeLeft());
+                actions = echoCommand;
                 finder.setState(new InitialEchoLeft());
             }
 
@@ -196,9 +197,10 @@ public class IslandFinder extends Algorithm {
             }
 
             else {
-                actionWithParam = new Echo();
-                actionWithParam.doAction(currDirection.seeLeft());
-                actions = actionWithParam;
+                Echo echoCommand = new Echo();
+                invoker.setCommand(echoCommand);
+                invoker.executeCommand(currDirection.seeLeft());
+                actions = echoCommand;
                 finder.setState(new EchoLeft());
             }
 
@@ -236,9 +238,10 @@ public class IslandFinder extends Algorithm {
 
             // echo after every 1 move 
             if (stepsSinceLastEcho % 1 == 0){
-                actionWithParam = new Echo();
-                actionWithParam.doAction(currDirection.seeRight());
-                actions = actionWithParam;
+                Echo echoCommand = new Echo();
+                invoker.setCommand(echoCommand);
+                invoker.executeCommand(currDirection.seeRight());
+                actions = echoCommand;
                 finder.setState(new EchoRight());
             }
 
@@ -267,9 +270,10 @@ public class IslandFinder extends Algorithm {
             }
 
             else {
-                action = new Scan();
-                action.doAction();
-                actions = action;
+                Scan scanCommand = new Scan();
+                invoker.setCommand(scanCommand);
+                invoker.executeCommand();
+                actions = scanCommand;
                 findingComplete = true;
 
                 logger.info("** FOUND ISLAND");

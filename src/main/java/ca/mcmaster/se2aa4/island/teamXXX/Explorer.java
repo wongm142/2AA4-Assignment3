@@ -28,6 +28,8 @@ public class Explorer implements IExplorerRaid {
     private AlgorithmFactory searcherFactory = new SearcherAlgorithmFactory();
     private AlgorithmFactory spiralFactory = new SpiralAlgorithmFactory();
 
+    private ActionInvoker invoker = new ActionInvoker();
+
     @Override
     public void initialize(String s) {
         logger.info("** Initializing the Exploration Command Center");
@@ -57,7 +59,6 @@ public class Explorer implements IExplorerRaid {
                 stage = 3;
             }
 
-            // logger.info("re run");
             JSONObject decision = new JSONObject();
             foundMove = false;
 
@@ -118,22 +119,17 @@ public class Explorer implements IExplorerRaid {
                 }
 
                 if (drone.getCounter() != 0 && checkPOIs(drone.getPosition(), drone.getCreeksAndEmergencySitesFound())) {
-                    ActionNoParam action = new Scan();
-                    action.doAction();
+                    Scan scanCommand = new Scan();
+                    invoker.setCommand(scanCommand);
+                    invoker.executeCommand();
+                    decision = scanCommand.getDecision();
                     flag = true;
-                    return action.getDecisionString();
+                    return decision.toString();
                 }
         
                 if (!spiral.isComplete()){
-                    // logger.info("Searching for creek");
-                    // logger.info("** State: {}", drone.getState());
-                    // logger.info("** SubCount: {}", drone.getSubCounter());
-                    // logger.info("**Counter: {}" ,drone.getCounter());
                     decision = spiral.run(drone);
                     // logger.info("** Decision: {}", decision.toString());
-
-                    // logger.info("**")
-
                     return decision.toString();
                 } 
                 
@@ -147,77 +143,18 @@ public class Explorer implements IExplorerRaid {
                     //add creek found to list
                     stage = 3;
                 }
-
-                // decision = spiral.run(drone);
-                // logger.info("** Decision: {}", decision.toString());
-
-                // if (spiral.isComplete()){
-                //     logger.info("is complete");
-                //     JSONArray creeks = drone.getInfo().getExtras().getJSONArray("creeks");
-                //     logger.info("1");
-                //     String creekID = creeks.getString(0);
-                //     logger.info("2");
-                //     drone.addCreekToCreeksAndSites(creekID);
-                //     logger.info("3");
-                //     foundCreekUsingSpiral = true;
-                //     stage = 3;
-                // }
-
-                // else if (checkPOIs(drone.getPosition(), drone.getCreeksAndEmergencySitesFound())){
-                //     stage = 4;
-                //     ActionNoParam action = new Scan();
-                //     action.doAction();
-                //     decision = action.getDecision();
-                //     return decision.toString();
-                // }
-
-                // logger.info("**")
-
-                // return decision.toString();
-                
-                
-                // else{
-                //     logger.info("Add creek to list ELSE");
-                //     JSONArray creeks = drone.getInfo().getExtras().getJSONArray("creeks");
-                //     logger.info("1");
-                //     String creekID = creeks.getString(0);
-                //     logger.info("2");
-                //     drone.addCreekToCreeksAndSites(creekID);
-                //     logger.info("3");
-                //     foundCreekUsingSpiral = true;
-
-                //     //add creek found to list
-                //     stage = 3;
-                // }
                 
             }
 
             else{ //stage 3
                 // logger.info("Stage 3");
-                decision = new JSONObject();
-                ActionNoParam action = new Stop();
-                action.doAction();
-                decision = action.getDecision();
+                Stop stopCommand = new Stop();
+                invoker.setCommand(stopCommand);
+                invoker.executeCommand();
+                decision = stopCommand.getDecision();
                 logger.info("** Decision: {}",decision);
                 return decision.toString();
             }
-
-            // else {
-            //     logger.info("stage 4");
-            //     try {
-            //         JSONArray creeks = drone.getInfo().getExtras().getJSONArray("creeks");
-            //         logger.info("1");
-            //         String creekID = creeks.getString(0);
-            //         logger.info("2");
-            //         drone.addCreekToCreeksAndSites(creekID);
-            //         logger.info("3");
-            //         stage = 3;
-            //     }
-
-            //     catch(Exception e) {
-            //         stage = 3;
-            //     }
-            // }
 
         }
         logger.info("should never be here");

@@ -10,7 +10,7 @@ public class Heading implements ActionWithParam {
     }
 
     @Override
-    public void doAction(Direction direction) {
+    public void execute(Direction direction) {
         decision.put("action", "heading");
         decision.put("parameters", new JSONObject().put("direction", direction.toString()));
     }

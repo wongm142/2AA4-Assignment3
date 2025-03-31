@@ -2,12 +2,14 @@ package ca.mcmaster.se2aa4.island.teamXXX;
 
 import java.util.ArrayList;
 
+import javax.swing.Action;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class SearcherAlgorithm extends Algorithm{
+public class SearcherAlgorithm extends Algorithm {
     private final Logger logger = LogManager.getLogger();
     private boolean turnRightOnUTurn = false;
     private boolean searchingComplete = false;
@@ -16,9 +18,8 @@ public class SearcherAlgorithm extends Algorithm{
     private Coord coordinates;
     private Drone drone;
     private Info info;
-    private Action actions;
-    private ActionNoParam action;
-    private ActionWithParam actionWithParam;
+    private ActionCommand actions;
+    private ActionInvoker invoker = new ActionInvoker();
 
     public SearcherAlgorithm(){
         state = new InitialState();
@@ -41,9 +42,10 @@ public class SearcherAlgorithm extends Algorithm{
     }
 
     private void moveAndUpdate(){
-        action = new Fly();
-        action.doAction();
-        actions = action;
+        Fly flyCommand = new Fly();
+        invoker.setCommand(flyCommand);
+        invoker.executeCommand();
+        actions = flyCommand;
         coordinates.flyForwards();
         drone.updateCoordinates(coordinates);
     }
@@ -67,9 +69,10 @@ public class SearcherAlgorithm extends Algorithm{
     }
     
     private void turnAndUpdate(Direction newDirection) {
-        actionWithParam = new Heading();
-        actionWithParam.doAction(newDirection);
-        actions = actionWithParam;
+        Heading headingCommand = new Heading();
+        invoker.setCommand(headingCommand);
+        invoker.executeCommand(newDirection);
+        actions = headingCommand;
 
         if (newDirection.equals(currDirection.seeLeft())) {
             logger.info("Turning left");
@@ -118,10 +121,11 @@ public class SearcherAlgorithm extends Algorithm{
             }
 
             else{
-                action = new Scan();
-                action.doAction();
+                Scan scanCommand = new Scan();
+                invoker.setCommand(scanCommand);
+                invoker.executeCommand();
                 searcher.setState(new ScanPlace());
-                actions = action;
+                actions = scanCommand;
             }
 
             return actions.getDecision();
@@ -131,10 +135,12 @@ public class SearcherAlgorithm extends Algorithm{
     private class InitialTurn implements SearcherAlgStates {
         @Override
         public JSONObject handle(SearcherAlgorithm searcher) {
-            action = new Scan();
-            action.doAction();
+            Scan scanCommand = new Scan();
+            invoker.setCommand(scanCommand);
+            invoker.executeCommand();
             searcher.setState(new ScanPlace());
-            return action.getDecision();
+            actions = scanCommand;
+            return actions.getDecision();
         }
     }
 
@@ -149,10 +155,12 @@ public class SearcherAlgorithm extends Algorithm{
 
             if (biomes.length() == 1){
                 if (biomes.get(0).equals("OCEAN")) {
-                    actionWithParam = new Echo();
-                    actionWithParam.doAction(currDirection);
+                    Echo echoCommand = new Echo();
+                    invoker.setCommand(echoCommand);
+                    invoker.executeCommand(currDirection);
+                    actions = echoCommand;
                     searcher.setState(new EchoForward());
-                    return actionWithParam.getDecision();
+                    return actions.getDecision();
                 }
             }
 
@@ -160,7 +168,7 @@ public class SearcherAlgorithm extends Algorithm{
 
             searcher.setState(new InitialTurn());
             // searcher.setState(new InitialState());
-            return action.getDecision();
+            return actions.getDecision();
         }
     }
 
@@ -188,31 +196,6 @@ public class SearcherAlgorithm extends Algorithm{
         
     }
 
-    // private class MoveAwayFromIsland implements SearcherAlgStates {
-    //     private int range;
-    //     private int flyCount;
-
-    //     public MoveAwayFromIsland(int range){
-    //         this.range = range;
-    //         flyCount = 0;
-    //     }
-
-    //     @Override
-    //     public JSONObject handle(SearcherAlgorithm searcher){
-    //         if (flyCount < 4){
-    //             moveAndUpdate();
-    //             flyCount++;
-    //         }
-
-    //         else {
-    //             performUTurn(turnRightOnUTurn);
-    //             searcher.setState(new UTurn());
-    //         }
-
-    //         return actions.getDecision();
-    //     }
-    // }
-
     private class MoveToIsland implements SearcherAlgStates {
         private int range;
         private int flyCount;
@@ -230,12 +213,14 @@ public class SearcherAlgorithm extends Algorithm{
             }
 
             else {
-                action = new Scan();
-                action.doAction();
+                Scan scanCommand = new Scan();
+                invoker.setCommand(scanCommand);
+                invoker.executeCommand();
                 searcher.setState(new ScanPlace());
+                actions = scanCommand;
             }
 
-            return action.getDecision();
+            return actions.getDecision();
         }
     }
 
@@ -257,12 +242,15 @@ public class SearcherAlgorithm extends Algorithm{
 
             else {
                 turnRightOnUTurn = !turnRightOnUTurn;
-                actionWithParam = new Echo();
-                actionWithParam.doAction(currDirection);
+
+                Echo echoCommand = new Echo();
+                invoker.setCommand(echoCommand);
+                invoker.executeCommand(currDirection);
+                actions = echoCommand;
                 searcher.setState(new CheckInterlacedScanCompletion());
             }
 
-            return actionWithParam.getDecision();
+            return actions.getDecision();
         }
     }
 
@@ -286,31 +274,6 @@ public class SearcherAlgorithm extends Algorithm{
             return actions.getDecision();
         }
     }
-
-    // private class PrepareForSweepTurn implements SearcherAlgStates {
-    //     private int range;
-    //     private int flyCount;
-    //     private boolean turnRightOnSweepTurn = !turnRightOnUTurn;
-
-    //     private PrepareForSweepTurn(int range) {
-    //         this.range = range - 2;
-    //         flyCount = 0;
-    //     }
-
-    //     public JSONObject handle(SearcherAlgorithm searcher) {
-    //         if (flyCount < range) {
-    //             moveAndUpdate();
-    //             flyCount++;
-    //         }
-
-    //         else {
-    //             performUTurn(turnRightOnSweepTurn);
-    //             searcher.setState(new SweepTurn());
-    //         }
-
-    //         return actions.getDecision();
-    //     }
-    // }
 
     private class SweepTurn implements SearcherAlgStates {
         private int step;
@@ -348,12 +311,12 @@ public class SearcherAlgorithm extends Algorithm{
                     step++;
                     break;
                 case 7:
-                    actionWithParam = new Echo();
-                    actionWithParam.doAction(currDirection);
-                    actions = actionWithParam;
+                    Echo echoCommand = new Echo();
+                    invoker.setCommand(echoCommand);
+                    invoker.executeCommand(currDirection);
+                    actions = echoCommand;
                     searcher.setState(new EchoForward());
                     turnRightOnUTurn = !turnRightOnUTurn;
-                    // actions.stop();
                     break;
             }
             return actions.getDecision();

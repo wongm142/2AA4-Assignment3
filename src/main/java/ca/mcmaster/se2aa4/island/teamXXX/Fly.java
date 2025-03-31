@@ -9,7 +9,7 @@ public class Fly implements ActionNoParam {
     }
 
     @Override
-    public void doAction() {
+    public void execute() {
         decision.put("action", "fly");
     }
     @Override

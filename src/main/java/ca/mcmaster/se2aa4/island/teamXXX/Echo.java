@@ -9,7 +9,7 @@ public class Echo implements ActionWithParam {
     }
 
     @Override
-    public void doAction(Direction direction) {
+    public void execute(Direction direction) {
         decision.put("action", "echo");
         decision.put("parameters", (new JSONObject()).put("direction", direction.toString()));
     }
