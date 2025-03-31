@@ -8,15 +8,9 @@ import org.junit.jupiter.api.Test;
 
 public class DroneTest {
 
-    private Drone drone;
-
-    @BeforeEach
-    public void setup() {
-        drone = new Drone(Direction.N, 100);
-    }
-
     @Test
     public void droneInitializationTest() {
+        Drone drone = new Drone(Direction.N, 100);
         Assertions.assertEquals(Direction.N, drone.getDirection());
         Assertions.assertEquals(100, drone.getBattery());
         Assertions.assertEquals(new Coord(0, 0, Direction.N), drone.getPosition());
@@ -24,6 +18,7 @@ public class DroneTest {
 
     @Test
     public void droneRecieveResponseTest() {
+        Drone drone = new Drone(Direction.N, 100);
         JSONObject extras = new JSONObject();
         extras.put("creeks", new JSONArray());
         extras.put("biomes", new JSONArray().put("OCEAN"));
@@ -37,6 +32,7 @@ public class DroneTest {
 
     @Test
     public void droneBatteryUpdateTest() {
+        Drone drone = new Drone(Direction.N, 100);
         JSONObject extras = new JSONObject();
         extras.put("creeks", new JSONArray());
         Info info = new Info(10, extras, "OK");
@@ -46,12 +42,14 @@ public class DroneTest {
 
     @Test
     public void droneDirectionUpdateTest() {
+        Drone drone = new Drone(Direction.N, 100);
         drone.updateDirection(Direction.E);
         Assertions.assertEquals(Direction.E, drone.getDirection());
     }
 
     @Test
     public void dronePositionUpdateTest() {
+        Drone drone = new Drone(Direction.N, 100);
         Coord newPosition = new Coord(2, 3, Direction.S);
         drone.updateCoordinates(newPosition);
         Assertions.assertEquals(newPosition, drone.getPosition());
@@ -59,6 +57,7 @@ public class DroneTest {
 
     @Test
     public void droneStateVarChangeTest() {
+        Drone drone = new Drone(Direction.N, 100);
         drone.setState(2);
         drone.setCounter(5);
         drone.setSubCounter(3);
@@ -69,6 +68,7 @@ public class DroneTest {
 
     @Test
     public void droneAddCreekTest() {
+        Drone drone = new Drone(Direction.N, 100);
         drone.addCreekToCreeksAndSites("CR12345");
         ArrayList<PointOfInterest> creeks = drone.getCreeksAndEmergencySitesFound();
         Assertions.assertEquals(1, creeks.size());
@@ -77,6 +77,7 @@ public class DroneTest {
 
     @Test
     public void droneAddEmergencySiteTest() {
+        Drone drone = new Drone(Direction.N, 100);
         drone.addSiteToCreeksAndSites("ES12345");
         ArrayList<PointOfInterest> sites = drone.getCreeksAndEmergencySitesFound();
         Assertions.assertEquals(1, sites.size());
@@ -85,6 +86,7 @@ public class DroneTest {
 
     @Test
     public void droneExploredCoordsTest() {
+        Drone drone = new Drone(Direction.N, 100);
         drone.addToCoords();
         Assertions.assertEquals(1, drone.getExploredCoords().size());
         Assertions.assertEquals(new Coord(0, 0, Direction.N), drone.getExploredCoords().get(0));
