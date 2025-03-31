@@ -4,16 +4,21 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class DirectionTest {
-
+    
     @Test
-    public void DirectionSeeLeftTest(){
-        Direction dir = Direction.N;
-        Assertions.assertEquals(dir.seeLeft(), Direction.W);
+    public void testSeeLeft() {
+        Assertions.assertEquals(Direction.W, Direction.N.seeLeft());
+        Assertions.assertEquals(Direction.S, Direction.W.seeLeft());
+        Assertions.assertEquals(Direction.E, Direction.S.seeLeft());
+        Assertions.assertEquals(Direction.N, Direction.E.seeLeft());
     }
 
     @Test
-    public void DirectionSeeRightTest(){
-        Direction dir = Direction.N;
-        Assertions.assertEquals(dir.seeRight(), Direction.E);
+    public void testSeeRight() {
+        Assertions.assertEquals(Direction.E, Direction.N.seeRight());
+        Assertions.assertEquals(Direction.S, Direction.E.seeRight());
+        Assertions.assertEquals(Direction.W, Direction.S.seeRight());
+        Assertions.assertEquals(Direction.N, Direction.W.seeRight());
     }
+
 }

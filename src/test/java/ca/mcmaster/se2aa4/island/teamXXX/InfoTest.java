@@ -21,7 +21,6 @@ public class InfoTest {
         Assertions.assertEquals("OK", info.getStatus());
     }
 
-
     @Test
     public void infoNoCreekTest_NoCreekPresent() {
         JSONObject extras = new JSONObject();
