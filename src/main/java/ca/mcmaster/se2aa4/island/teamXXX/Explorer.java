@@ -16,14 +16,17 @@ public class Explorer implements IExplorerRaid {
     private final Logger logger = LogManager.getLogger();
     private Drone drone;
     private Translator trans = new Translator();
-    private Algorithm finder = new IslandFinder();
     private boolean flag = false;
     private int stage = 0;
     private boolean foundCreekUsingSpiral = false;
     
-    private Algorithm searcher = new SearcherAlgorithm();
-    private Algorithm spiral = new SpiralAlgorithm();
-    
+    private Algorithm finder;
+    private Algorithm searcher;
+    private Algorithm spiral;
+
+    private AlgorithmFactory finderFactory = new IslandFinderFactory();
+    private AlgorithmFactory searcherFactory = new SearcherAlgorithmFactory();
+    private AlgorithmFactory spiralFactory = new SpiralAlgorithmFactory();
 
     @Override
     public void initialize(String s) {
@@ -37,6 +40,10 @@ public class Explorer implements IExplorerRaid {
         
         logger.info("The drone is facing {}", direction);
         logger.info("Battery level is {}", batteryLevel);
+
+        finder = finderFactory.createAlgorithm();
+        searcher = searcherFactory.createAlgorithm();
+        spiral = spiralFactory.createAlgorithm();
     }
 
     @Override
