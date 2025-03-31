@@ -24,6 +24,7 @@ public class SpiralAlgorithmTest {
         algorithm.run(drone);
 
         Assertions.assertTrue(algorithm.isComplete(), "Algorithm should be complete when a creek is found");
+        Assertions.assertNotNull(algorithm.run(drone), "Decision should not be null when creek is found");
     }
 
     @Test
@@ -49,18 +50,18 @@ public class SpiralAlgorithmTest {
         SpiralAlgorithm algorithm = new SpiralAlgorithm();
 
         // Initial state
-        Assertions.assertEquals(0, drone.getState());
-        Assertions.assertEquals(0, drone.getSubCounter());
-        Assertions.assertEquals(0, drone.getCounter());
+        Assertions.assertEquals(0, drone.getState(), "Drone should be in state 0 initially");
+        Assertions.assertEquals(0, drone.getSubCounter(), "Drone should have a subCounter of 0 initially");
+        Assertions.assertEquals(0, drone.getCounter(), "Drone should have a counter of 0 initially");
 
         // Run the algorithm a 3 times
         algorithm.run(drone);
         algorithm.run(drone);
         algorithm.run(drone);
         
-        Assertions.assertTrue(drone.getState() ==1, "after 3 runs after init state should be 1");
-        Assertions.assertTrue(drone.getSubCounter() ==1, "after 3 runs after init subCounter should be 1");
-        Assertions.assertTrue(drone.getCounter() == 0, "after 3 runs after init counter should be 1");
+        Assertions.assertEquals(1, drone.getState(), "After 3 runs, drone should be in state 1");
+        Assertions.assertEquals(1, drone.getSubCounter(), "After 3 runs, subCounter should be 1");
+        Assertions.assertEquals(0, drone.getCounter(), "After 3 runs, counter should remain 0");
     }
 
     @Test
@@ -79,10 +80,9 @@ public class SpiralAlgorithmTest {
         int newX = drone.getPosition().getX();
         int newY = drone.getPosition().getY();
 
-        Assertions.assertTrue(initialX == 0); //init
-        Assertions.assertTrue(initialY == 0); //init
-        Assertions.assertTrue(newX == -1); //left on x axis
-        Assertions.assertTrue(newY == 1); //up on y axis
-
+        Assertions.assertEquals(0, initialX, "Initial X coordinate should be 0");
+        Assertions.assertEquals(0, initialY, "Initial Y coordinate should be 0");
+        Assertions.assertEquals(-1, newX, "After left turn, X coordinate should be -1");
+        Assertions.assertEquals(1, newY, "After left turn, Y coordinate should be 1");
     }
 }
